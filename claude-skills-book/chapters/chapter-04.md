@@ -1414,23 +1414,903 @@ __all__ = ['execute_login_test']
 
 ---
 
-**(由於篇幅限制，Chapter 4 還需要繼續完成 4.4-4.6 節。當前已完成約 4,500 字，還需要約 3,500 字來達到 8,000 字目標。將在下一部分繼續添加剩餘章節...)**
-
 ## 4.4 處理複雜 UI 互動
 
-*[待完成: 動態內容處理、文件上傳、拖放操作]*
+現實世界的 Web 應用程式充滿了複雜的 UI 互動：動態載入的內容、文件上傳、拖放操作、無限滾動等。Stagehand 為這些場景提供了優雅的解決方案。
+
+### 4.4.1 動態內容處理
+
+**場景 1：等待動態載入的內容**
+
+```typescript
+// 處理載入動畫
+await page.goto("https://example.com/dashboard");
+
+// 等待載入動畫消失
+await page.observe("wait until the loading spinner disappears");
+
+// 等待內容出現
+await page.observe("wait for the dashboard widgets to appear");
+
+// 現在可以安全地提取數據
+const dashboardData = await page.extract({
+  userCount: "total number of users",
+  revenue: "total revenue shown",
+  activeProjects: "number of active projects"
+});
+```
+
+**場景 2：處理無限滾動**
+
+```typescript
+async function scrapeInfiniteScroll(page, maxItems = 100) {
+  const allItems = [];
+  let previousCount = 0;
+
+  while (allItems.length < maxItems) {
+    // 滾動到底部
+    await page.act("scroll to the bottom of the page");
+
+    // 等待新內容載入
+    await page.observe("wait for new items to load");
+
+    // 提取當前可見的項目
+    const items = await page.extract({
+      items: [
+        {
+          title: "item title",
+          price: "item price"
+        }
+      ]
+    });
+
+    // 檢查是否有新項目
+    if (items.items.length === previousCount) {
+      console.log("已到達底部，無更多內容");
+      break;
+    }
+
+    allItems.push(...items.items);
+    previousCount = items.items.length;
+
+    console.log(`已載入 ${allItems.length} 個項目`);
+  }
+
+  return allItems;
+}
+```
+
+**場景 3：處理 AJAX 請求**
+
+```typescript
+// 點擊觸發 AJAX 請求
+await page.act("click the load more button");
+
+// 智能等待 - Stagehand 會自動檢測 AJAX 完成
+await page.observe("wait for new content to appear");
+
+// 或者更具體地描述預期變化
+await page.observe("wait for the item count to increase");
+```
+
+**場景 4：處理動態表單**
+
+```typescript
+// 複雜的多步驟表單
+await page.act("select the country United States");
+
+// 等待州/省份下拉選單動態載入
+await page.observe("wait for the state dropdown to become available");
+
+await page.act("select the state California");
+
+// 等待城市下拉選單更新
+await page.observe("wait for the city dropdown to update");
+
+await page.act("select the city San Francisco");
+```
+
+### 4.4.2 文件上傳
+
+Stagehand 讓文件上傳變得非常簡單。
+
+**單文件上傳**：
+
+```typescript
+// 方式 1: 使用 act() with file 選項
+await page.act("upload profile picture", {
+  file: "/path/to/profile.jpg"
+});
+
+// 方式 2: 更自然的描述
+await page.act("click the upload button and select the profile picture", {
+  file: "/Users/john/Documents/profile.jpg"
+});
+```
+
+**多文件上傳**：
+
+```typescript
+await page.act("upload documents", {
+  files: [
+    "/path/to/document1.pdf",
+    "/path/to/document2.pdf",
+    "/path/to/document3.pdf"
+  ]
+});
+
+// 等待上傳完成
+await page.observe("wait for all files to finish uploading");
+
+// 驗證上傳成功
+const uploadStatus = await page.extract({
+  uploadedFiles: [
+    {
+      filename: "file name",
+      status: "upload status"
+    }
+  ],
+  totalUploaded: "total number of files uploaded"
+});
+```
+
+**帶進度追蹤的文件上傳**：
+
+```typescript
+async function uploadWithProgress(page, filePath) {
+  await page.act("upload file", { file: filePath });
+
+  let progress = 0;
+
+  while (progress < 100) {
+    const status = await page.extract({
+      progress: "what is the upload progress percentage?",
+      isComplete: "is the upload complete?"
+    });
+
+    progress = parseInt(status.progress) || 0;
+    console.log(`上傳進度: ${progress}%`);
+
+    if (status.isComplete) {
+      break;
+    }
+
+    await new Promise(resolve => setTimeout(resolve, 500));
+  }
+
+  console.log("✓ 文件上傳完成");
+}
+```
+
+### 4.4.3 拖放操作
+
+拖放操作傳統上很難自動化，但 Stagehand 讓它變得簡單。
+
+**基本拖放**：
+
+```typescript
+// Stagehand 理解拖放的語意
+await page.act("drag the task from todo to done");
+
+await page.act("drag the file to the upload area");
+
+await page.act("reorder the list by dragging item 3 to position 1");
+```
+
+**複雜拖放場景**：
+
+```typescript
+// Kanban 看板拖放
+await page.act("drag the card 'Fix login bug' from Backlog to In Progress");
+
+await page.observe("wait for the card to appear in In Progress column");
+
+// 驗證拖放成功
+const cardLocation = await page.extract({
+  cardTitle: "what is the card title?",
+  columnName: "which column is the card in?",
+  position: "what position in the column?"
+});
+
+console.log(`卡片 "${cardLocation.cardTitle}" 現在在 ${cardLocation.columnName}，位置 ${cardLocation.position}`);
+```
+
+**文件管理器拖放**：
+
+```typescript
+// 拖放多個文件到資料夾
+await page.act("select files document1.pdf, document2.pdf, and document3.pdf");
+await page.act("drag the selected files to the Archive folder");
+await page.observe("wait for the files to be moved");
+
+// 驗證操作
+const result = await page.extract({
+  filesInArchive: "how many files are now in the Archive folder?",
+  moveSuccess: "was the move successful?"
+});
+```
+
+### 4.4.4 處理彈窗和對話框
+
+**模態對話框**：
+
+```typescript
+// 等待彈窗出現
+await page.observe("wait for the confirmation dialog to appear");
+
+// 與彈窗互動
+await page.act("click the confirm button in the dialog");
+
+// 或者更具體
+await page.act("click the red delete button in the confirmation popup");
+```
+
+**處理多個彈窗**：
+
+```typescript
+// 第一個彈窗：隱私政策
+await page.observe("wait for the privacy policy popup");
+await page.act("click accept on the privacy popup");
+
+// 第二個彈窗：訂閱通知
+await page.observe("wait for the notification subscription popup");
+await page.act("click no thanks on the subscription popup");
+
+// 第三個彈窗：特別優惠
+await page.observe("wait for the special offer popup");
+await page.act("close the offer popup");
+```
+
+**瀏覽器原生對話框**：
+
+```typescript
+// 處理 alert, confirm, prompt
+page.on('dialog', async dialog => {
+  console.log(`對話框類型: ${dialog.type()}`);
+  console.log(`對話框訊息: ${dialog.message()}`);
+
+  if (dialog.type() === 'confirm') {
+    await dialog.accept();
+  } else if (dialog.type() === 'prompt') {
+    await dialog.accept('測試輸入');
+  }
+});
+
+await page.act("click the button that shows a confirm dialog");
+```
+
+### 4.4.5 處理 iframe 和多視窗
+
+**iframe 處理**：
+
+```typescript
+// Stagehand 自動處理 iframe 上下文
+await page.act("click the button inside the payment iframe");
+
+await page.act("fill in the credit card number in the payment form", {
+  text: "4111111111111111"
+});
+
+// 從 iframe 中提取數據
+const paymentInfo = await page.extract({
+  cardNumber: "what credit card number is entered?",
+  expiryDate: "what is the expiry date?",
+  isValid: "is the payment form valid?"
+});
+```
+
+**多視窗/分頁處理**：
+
+```typescript
+// 點擊會開啟新視窗的連結
+const [newPage] = await Promise.all([
+  stagehand.context.waitForEvent('page'),
+  page.act("click the link that opens in a new tab")
+]);
+
+// 在新視窗中操作
+const newPageStagehand = new Stagehand({ page: newPage });
+await newPageStagehand.init();
+
+await newPage.act("fill in the form");
+await newPage.act("submit");
+
+// 關閉新視窗，回到原視窗
+await newPage.close();
+await page.bringToFront();
+```
 
 ## 4.5 自愈機制與錯誤恢復
 
-*[待完成: 自動重試、錯誤恢復策略]*
+Stagehand 最強大的特性之一就是自愈能力。讓我們深入了解它如何工作，以及如何增強這種能力。
+
+### 4.5.1 自動重試機制
+
+**內建重試配置**：
+
+```typescript
+const stagehand = new Stagehand({
+  env: "LOCAL",
+  retries: 3,           // 操作失敗時自動重試 3 次
+  retryDelay: 1000,     // 重試間隔 1 秒
+  timeout: 30000        // 單次操作超時 30 秒
+});
+```
+
+**重試行為詳解**：
+
+```typescript
+// 當執行這個操作時
+await page.act("click the submit button");
+
+// Stagehand 內部流程:
+// 嘗試 1: 尋找元素 → 失敗 (元素未找到)
+//   等待 1 秒
+// 嘗試 2: 重新掃描頁面 → 找到元素 → 點擊 → 成功 ✓
+
+// 或者如果持續失敗:
+// 嘗試 1: 失敗
+// 嘗試 2: 失敗
+// 嘗試 3: 失敗
+// 嘗試 4: 拋出錯誤並提供詳細資訊
+```
+
+**自定義重試邏輯**：
+
+```typescript
+async function robustAction(page, action, maxRetries = 5) {
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      await page.act(action);
+      console.log(`✓ 操作成功（嘗試 ${attempt}/${maxRetries}）`);
+      return;
+
+    } catch (error) {
+      console.log(`✗ 嘗試 ${attempt}/${maxRetries} 失敗: ${error.message}`);
+
+      if (attempt === maxRetries) {
+        console.error("已達最大重試次數");
+        throw error;
+      }
+
+      // 指數退避
+      const delay = Math.min(1000 * Math.pow(2, attempt - 1), 30000);
+      console.log(`等待 ${delay}ms 後重試...`);
+      await new Promise(resolve => setTimeout(resolve, delay));
+
+      // 可選：重新載入頁面或重置狀態
+      if (attempt % 2 === 0) {
+        console.log("刷新頁面以重置狀態...");
+        await page.reload();
+      }
+    }
+  }
+}
+
+// 使用
+await robustAction(page, "click the checkout button");
+```
+
+### 4.5.2 錯誤恢復策略
+
+**策略 1：截圖並繼續**
+
+```typescript
+async function actionWithScreenshot(page, action, screenshotPath) {
+  try {
+    await page.act(action);
+  } catch (error) {
+    console.error(`操作失敗: ${action}`);
+
+    // 截圖保存當前狀態
+    await page.screenshot({
+      path: `${screenshotPath}/error-${Date.now()}.png`,
+      fullPage: true
+    });
+
+    // 記錄頁面狀態
+    const pageState = await page.extract({
+      url: "current URL",
+      title: "page title",
+      errorMessages: "any visible error messages",
+      pageState: "describe the current state of the page"
+    });
+
+    console.error("頁面狀態:", JSON.stringify(pageState, null, 2));
+
+    throw error;
+  }
+}
+```
+
+**策略 2：降級執行**
+
+```typescript
+async function attemptWithFallback(page) {
+  try {
+    // 嘗試主要方式：使用 agent 自動完成
+    await page.agent("complete the checkout process");
+
+  } catch (error) {
+    console.log("Agent 執行失敗，切換到手動步驟...");
+
+    // 降級到手動步驟
+    try {
+      await page.act("enter shipping address");
+      await page.act("select shipping method");
+      await page.act("enter payment information");
+      await page.act("click place order");
+
+    } catch (fallbackError) {
+      console.log("手動步驟也失敗，嘗試最簡方案...");
+
+      // 最後的後備方案
+      await page.evaluate(() => {
+        // 使用原生 JavaScript 操作
+        document.querySelector('#checkout-btn').click();
+      });
+    }
+  }
+}
+```
+
+**策略 3：智能恢復點**
+
+```typescript
+async function checkpointedFlow(page) {
+  const checkpoints = [];
+
+  try {
+    // Checkpoint 1: 登入
+    console.log("Checkpoint 1: 登入");
+    await page.act("login");
+    checkpoints.push("login");
+
+    // Checkpoint 2: 選擇產品
+    console.log("Checkpoint 2: 選擇產品");
+    await page.act("select product");
+    checkpoints.push("product_selected");
+
+    // Checkpoint 3: 加入購物車
+    console.log("Checkpoint 3: 加入購物車");
+    await page.act("add to cart");
+    checkpoints.push("added_to_cart");
+
+    // Checkpoint 4: 結帳
+    console.log("Checkpoint 4: 結帳");
+    await page.act("proceed to checkout");
+    checkpoints.push("checkout");
+
+  } catch (error) {
+    console.error(`流程在 checkpoint "${checkpoints[checkpoints.length - 1]}" 之後失敗`);
+
+    // 根據失敗點決定恢復策略
+    const lastCheckpoint = checkpoints[checkpoints.length - 1];
+
+    if (lastCheckpoint === "login") {
+      // 登入失敗 - 檢查憑證
+      console.log("恢復策略: 驗證登入憑證");
+
+    } else if (lastCheckpoint === "added_to_cart") {
+      // 購物車成功，結帳失敗 - 檢查購物車狀態
+      console.log("恢復策略: 驗證購物車內容並重試結帳");
+
+    }
+
+    throw error;
+  }
+
+  return checkpoints;
+}
+```
+
+### 4.5.3 處理常見錯誤
+
+**錯誤 1：元素未找到**
+
+```typescript
+async function handleElementNotFound(page, action) {
+  try {
+    await page.act(action);
+  } catch (error) {
+    if (error.message.includes("element not found")) {
+      console.log("元素未找到，嘗試替代描述...");
+
+      // 嘗試不同的語意描述
+      const alternatives = [
+        "click the submit button",
+        "click the confirm button",
+        "click the save button",
+        "click the continue button"
+      ];
+
+      for (const alt of alternatives) {
+        try {
+          await page.act(alt);
+          console.log(`✓ 成功使用替代描述: ${alt}`);
+          return;
+        } catch (e) {
+          continue;
+        }
+      }
+
+      throw new Error("所有替代方案都失敗");
+    }
+    throw error;
+  }
+}
+```
+
+**錯誤 2：超時**
+
+```typescript
+async function handleTimeout(page, action, maxWait = 60000) {
+  const startTime = Date.now();
+
+  while (Date.now() - startTime < maxWait) {
+    try {
+      await page.act(action, { timeout: 10000 });
+      return; // 成功
+
+    } catch (error) {
+      if (error.message.includes("timeout")) {
+        console.log("操作超時，檢查頁面狀態...");
+
+        // 檢查是否有載入指示器
+        const isLoading = await page.extract({
+          loading: "is the page still loading?"
+        });
+
+        if (isLoading.loading) {
+          console.log("頁面仍在載入，繼續等待...");
+          await new Promise(r => setTimeout(r, 2000));
+          continue;
+        }
+      }
+      throw error;
+    }
+  }
+
+  throw new Error(`操作超時，已等待 ${maxWait}ms`);
+}
+```
 
 ## 4.6 WebGuard 瀏覽器測試模組
 
-*[待完成: 模組架構、完整 E2E 測試]*
+現在讓我們整合所有學到的知識，構建 WebGuard 的完整瀏覽器測試模組。
+
+### 4.6.1 模組架構
+
+```
+webguard/
+├── src/
+│   ├── skills/
+│   │   ├── browser/
+│   │   │   ├── __init__.py
+│   │   │   ├── base.py              # 基礎測試類別
+│   │   │   ├── login_test.py        # 登入測試
+│   │   │   ├── navigation_test.py   # 導航測試
+│   │   │   ├── form_test.py         # 表單測試
+│   │   │   ├── e2e_test.py          # E2E 測試套件
+│   │   │   └── visual_test.py       # 視覺回歸測試
+│   │   └── stagehand/
+│   │       ├── login.js
+│   │       ├── navigation.js
+│   │       ├── form.js
+│   │       ├── e2e.js
+│   │       └── visual.js
+│   └── utils/
+│       ├── screenshot.py
+│       └── report.py
+├── tests/
+│   └── browser/
+│       ├── test_login.py
+│       └── test_e2e.py
+└── config/
+    └── browser_config.yaml
+```
+
+### 4.6.2 基礎測試類別
+
+```python
+# src/skills/browser/base.py
+import asyncio
+import json
+import logging
+from typing import Dict, Any, Optional, List
+from pathlib import Path
+from datetime import datetime
+
+logger = logging.getLogger(__name__)
+
+class BrowserTestBase:
+    """瀏覽器測試基礎類別"""
+
+    def __init__(
+        self,
+        headless: bool = True,
+        timeout: int = 60,
+        screenshot_dir: str = "screenshots",
+        verbose: bool = False
+    ):
+        self.headless = headless
+        self.timeout = timeout
+        self.screenshot_dir = Path(screenshot_dir)
+        self.verbose = verbose
+        self.screenshot_dir.mkdir(parents=True, exist_ok=True)
+
+    async def run_stagehand_script(
+        self,
+        script_name: str,
+        **kwargs
+    ) -> Dict[str, Any]:
+        """
+        執行 Stagehand 腳本
+
+        Args:
+            script_name: 腳本名稱（不含 .js 後綴）
+            **kwargs: 傳遞給腳本的參數
+
+        Returns:
+            執行結果
+        """
+        script_path = Path(__file__).parent.parent / "stagehand" / f"{script_name}.js"
+
+        if not script_path.exists():
+            raise FileNotFoundError(f"Script not found: {script_path}")
+
+        # 構建命令
+        cmd = ["node", str(script_path)]
+
+        # 添加參數
+        for key, value in kwargs.items():
+            cmd.append(f"--{key.replace('_', '-')}")
+            if isinstance(value, bool):
+                if value:
+                    continue  # 布爾 flag 不需要值
+            else:
+                cmd.append(str(value))
+
+        if self.headless:
+            cmd.append("--headless")
+
+        if self.verbose:
+            cmd.append("--verbose")
+
+        cmd.extend(["--timeout", str(self.timeout * 1000)])
+
+        logger.info(f"Running: {' '.join(cmd)}")
+
+        # 執行腳本
+        proc = await asyncio.create_subprocess_exec(
+            *cmd,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE
+        )
+
+        try:
+            stdout, stderr = await asyncio.wait_for(
+                proc.communicate(),
+                timeout=self.timeout + 10
+            )
+        except asyncio.TimeoutError:
+            proc.kill()
+            raise RuntimeError(f"Script timed out after {self.timeout + 10}s")
+
+        if proc.returncode != 0:
+            error_msg = stderr.decode('utf-8', errors='replace')
+            logger.error(f"Script failed: {error_msg}")
+            raise RuntimeError(f"Script execution failed: {error_msg}")
+
+        # 解析結果
+        try:
+            result = json.loads(stdout.decode('utf-8'))
+
+            # 保存截圖（如果有）
+            if 'screenshot' in result and result['screenshot']:
+                self._save_screenshot(result['screenshot'], script_name)
+
+            return result
+
+        except json.JSONDecodeError as e:
+            logger.error(f"Failed to parse result: {e}")
+            raise
+
+    def _save_screenshot(self, base64_data: str, name: str):
+        """保存 base64 截圖"""
+        import base64
+
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        filename = f"{name}_{timestamp}.png"
+        filepath = self.screenshot_dir / filename
+
+        with open(filepath, 'wb') as f:
+            f.write(base64.b64decode(base64_data))
+
+        logger.info(f"Screenshot saved: {filepath}")
+
+    def create_test_report(
+        self,
+        test_name: str,
+        results: List[Dict[str, Any]]
+    ) -> Dict[str, Any]:
+        """創建測試報告"""
+        total = len(results)
+        passed = sum(1 for r in results if r.get('success', False))
+        failed = total - passed
+
+        return {
+            "test_name": test_name,
+            "total_tests": total,
+            "passed": passed,
+            "failed": failed,
+            "success_rate": f"{(passed / total * 100):.1f}%" if total > 0 else "0%",
+            "results": results,
+            "timestamp": datetime.now().isoformat()
+        }
+```
+
+### 4.6.3 完整 E2E 測試套件
+
+```python
+# src/skills/browser/e2e_test.py
+from .base import BrowserTestBase
+from typing import Dict, Any, List
+import logging
+
+logger = logging.getLogger(__name__)
+
+class E2ETestSuite(BrowserTestBase):
+    """端對端測試套件"""
+
+    async def test_complete_user_journey(
+        self,
+        base_url: str,
+        test_user: Dict[str, str]
+    ) -> Dict[str, Any]:
+        """
+        測試完整用戶旅程
+
+        Args:
+            base_url: 應用程式基礎 URL
+            test_user: 測試用戶資訊 (username, password)
+
+        Returns:
+            完整測試結果
+        """
+        results = []
+
+        # 步驟 1: 登入
+        logger.info("步驟 1: 測試登入")
+        login_result = await self.run_stagehand_script(
+            "login",
+            url=f"{base_url}/login",
+            username=test_user['username'],
+            password=test_user['password']
+        )
+        results.append({
+            "step": "login",
+            "success": login_result.get('success', False),
+            "details": login_result
+        })
+
+        if not login_result.get('success'):
+            return self.create_test_report("user_journey", results)
+
+        # 步驟 2: 導航測試
+        logger.info("步驟 2: 測試導航")
+        nav_result = await self.run_stagehand_script(
+            "navigation",
+            base_url=base_url,
+            pages=["dashboard", "profile", "settings"]
+        )
+        results.append({
+            "step": "navigation",
+            "success": nav_result.get('success', False),
+            "details": nav_result
+        })
+
+        # 步驟 3: 表單操作
+        logger.info("步驟 3: 測試表單操作")
+        form_result = await self.run_stagehand_script(
+            "form",
+            url=f"{base_url}/profile/edit",
+            form_data={
+                "name": "Test User Updated",
+                "email": "updated@example.com",
+                "bio": "Updated bio text"
+            }
+        )
+        results.append({
+            "step": "form_submission",
+            "success": form_result.get('success', False),
+            "details": form_result
+        })
+
+        # 步驟 4: 數據驗證
+        logger.info("步驟 4: 驗證數據更新")
+        # ... 更多測試步驟
+
+        return self.create_test_report("user_journey", results)
+
+
+def execute_e2e_test(
+    base_url: str,
+    username: str,
+    password: str,
+    headless: bool = True
+) -> Dict[str, Any]:
+    """E2E 測試 Skill 入口"""
+    suite = E2ETestSuite(headless=headless)
+    return asyncio.run(
+        suite.test_complete_user_journey(
+            base_url,
+            {"username": username, "password": password}
+        )
+    )
+```
 
 ## 4.7 本章總結
 
-*[待完成: 關鍵要點、檢查清單、下一章預告]*
+恭喜！你已經掌握了 Stagehand 瀏覽器自動化的完整知識體系。
+
+### 4.7.1 關鍵要點回顧
+
+✅ **Stagehand 革命性優勢**
+- 44% 更快的執行速度
+- 90% 減少的上下文使用量
+- 70% 減少的維護工作量
+- 自愈能力讓測試自動適應 UI 變更
+
+✅ **四大核心 API 精通**
+- **act()**: 執行語意化操作，不依賴脆弱選擇器
+- **extract()**: 提取結構化數據，支援複雜嵌套
+- **observe()**: 智能等待條件，自動檢測頁面狀態
+- **agent()**: 自主完成複雜多步驟任務
+
+✅ **複雜場景處理能力**
+- 動態內容、無限滾動、AJAX 請求
+- 文件上傳、拖放操作
+- 彈窗、iframe、多視窗處理
+
+✅ **企業級可靠性**
+- 自動重試機制
+- 智能錯誤恢復
+- 降級執行策略
+- 完整的日誌和截圖
+
+✅ **WebGuard 整合**
+- 模組化架構設計
+- Python + TypeScript 無縫協作
+- 完整的 E2E 測試套件
+- 生產級錯誤處理
+
+### 4.7.2 實踐檢查清單
+
+在進入下一章之前，確保你能夠：
+
+- [ ] 解釋 Stagehand 相比傳統工具的核心優勢
+- [ ] 使用 act() 執行各種頁面操作
+- [ ] 使用 extract() 提取複雜的結構化數據
+- [ ] 使用 observe() 實現智能等待
+- [ ] 使用 agent() 完成自主任務
+- [ ] 處理文件上傳和拖放操作
+- [ ] 實作自動重試和錯誤恢復機制
+- [ ] 構建完整的登入測試 Skill
+- [ ] 整合 Python 和 TypeScript 代碼
+- [ ] 理解 WebGuard 瀏覽器模組架構
+
+### 4.7.3 下一章預告
+
+第 5 章將探討**數據與文件處理自動化**，學習如何：
+
+- 使用 Pandas 處理 Excel/CSV 數據
+- 自動化 PDF 生成和解析
+- 驗證和清理大規模數據
+- 構建數據驅動的測試
+- 整合資料庫操作
+
+從瀏覽器自動化到數據處理，我們的 WebGuard 系統將越來越強大！
 
 ---
 
