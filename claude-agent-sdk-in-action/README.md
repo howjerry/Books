@@ -27,8 +27,8 @@
 ## 📖 全書架構
 
 ### 第一部：基礎篇 - 你的第一個 Claude Agent
-- 第 1 章：建構你的第一個 Claude Agent - 智慧客服助理
-- 第 2 章：賦予 Agent 執行能力 - 自動化報表生成系統
+- **第 1 章：建構你的第一個 Claude Agent - 智慧客服助理** ✅ **已完成**
+- **第 2 章：賦予 Agent 執行能力 - 自動化報表生成系統** ✅ **已完成**
 - 第 3 章：情境工程 - 建立長期記憶的知識管理 Agent
 
 ### 第二部：進階篇 - Subagents 與專業化分工
@@ -57,8 +57,12 @@ claude-agent-sdk-in-action/
 ├── BOOK_PROPOSAL.md            # 完整出版企劃書
 ├── manuscript/                 # 書稿內容
 │   └── chapters/              # 各章節內容
+│       ├── chapter-01.md      # ✅ 已完成
+│       ├── chapter-02.md      # ✅ 已完成
 │       └── chapter-04.md      # ✅ 已完成
 ├── code-examples/             # 完整可運行的程式碼範例
+│   ├── chapter-01/            # 客服 Agent 範例
+│   └── chapter-02/            # 報表生成 Agent 範例
 ├── diagrams/                  # 技術圖表與架構圖
 ├── resources/                 # 補充資源
 └── planning/                  # 寫作計畫與進度追蹤
@@ -69,6 +73,22 @@ claude-agent-sdk-in-action/
 ## ✅ 當前進度
 
 ### 已完成章節
+
+- [x] **第 1 章：建構你的第一個 Claude Agent - 智慧客服助理** (2025-11-08)
+  - 理解 Agent vs. 傳統 LLM 應用
+  - Think → Act → Observe 循環
+  - 工具定義與 Tool Use
+  - 對話記憶管理
+  - 62KB 完整內容 + 可運行程式碼
+
+- [x] **第 2 章：賦予 Agent 執行能力 - 自動化報表生成系統** (2025-11-08)
+  - 安全的 Bash 執行器（白名單/黑名單）
+  - 檔案操作工具（讀寫 TXT/JSON/CSV）
+  - Python 腳本執行器（圖表生成）
+  - 報表協調器 Agent
+  - 多層防護策略與安全審計
+  - 56KB 完整內容 + ~1,000 行程式碼
+
 - [x] **第 4 章：你的第一個 Subagent - 大規模程式碼重構系統** (2025-11-08)
   - 完整的主協調器實作 (RefactoringCoordinator)
   - 專業化 Subagent 實作 (CodeRefactorSubagent)
@@ -77,7 +97,7 @@ claude-agent-sdk-in-action/
   - 54KB 完整內容，包含可運行的程式碼
 
 ### 待完成章節
-- [ ] 第 1-3 章（基礎篇）
+- [ ] 第 3 章（基礎篇）
 - [ ] 第 5-6 章（進階篇）
 - [ ] 第 7-9 章（實戰篇）
 - [ ] 第 10-13 章（治理篇）
@@ -131,7 +151,7 @@ claude-agent-sdk-in-action/
 
 | 階段 | 時間 | 產出 |
 |------|------|------|
-| 第一階段：基礎篇 | Month 1-2 | 第 1-3 章 |
+| 第一階段：基礎篇 | Month 1-2 | 第 1-3 章 ✅ 1-2已完成 |
 | 第二階段：進階篇 | Month 2-3 | 第 4-6 章 ✅ 4已完成 |
 | 第三階段：實戰篇 | Month 3-4 | 第 7-9 章 |
 | 第四階段：治理篇 | Month 4-5 | 第 10-12 章 |
