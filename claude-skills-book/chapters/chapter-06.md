@@ -39,7 +39,7 @@ Python 生態系統有兩大 HTTP 客戶端：
 import requests
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
-from typing import Dict, Any, Optional, List
+from typing import Dict, Any, Optional, List, Tuple
 import logging
 import time
 from datetime import datetime
@@ -231,7 +231,7 @@ class APITester:
         self,
         data: Any,
         schema: Dict[str, Any]
-    ) -> tuple[bool, List[str]]:
+    ) -> Tuple[bool, List[str]]:
         """
         驗證 JSON 數據是否符合 Schema
 
