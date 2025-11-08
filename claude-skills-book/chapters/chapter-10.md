@@ -319,7 +319,7 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 @app.post("/api/v1/executions/trigger")
 @limiter.limit("10/minute")  # 每分鐘最多 10 次
-async def trigger_execution(request: Request, ...):
+async def trigger_execution(request: Request):  # 其他参数省略,详见第9章API实现
     # 執行邏輯...
     pass
 ```
