@@ -1,0 +1,33 @@
+# 允許執行的命令白名單
+allowed_commands:
+  - psql          # PostgreSQL 查詢
+  - grep          # 文字搜尋
+  - awk           # 文字處理
+  - sed           # 流編輯器
+  - wc            # 字數統計
+  - cat           # 檔案內容查看
+  - head          # 查看檔案開頭
+  - tail          # 查看檔案結尾
+  - sort          # 排序
+  - uniq          # 去重
+  - cut           # 欄位切割
+  - python        # Python 腳本執行（限制在 scripts/ 目錄）
+  - echo          # 輸出文字
+
+# 危險模式黑名單
+blocked_patterns:
+  - "rm -rf"
+  - "rm -fr"
+  - "sudo"
+  - "chmod 777"
+  - "curl"        # 網路請求
+  - "wget"        # 網路下載
+  - "/etc/"       # 系統配置目錄
+  - "/var/"       # 系統變數目錄
+  - "/usr/"       # 系統程式目錄
+
+# 工作空間限制
+workspace: "./workspace"
+
+# 超時設定（秒）
+timeout: 30
