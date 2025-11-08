@@ -1,0 +1,96 @@
+version: '3.8'
+
+services:
+  # PostgreSQL 資料庫
+  postgres:
+    image: postgres:15-alpine
+    container_name: support-platform-postgres
+    environment:
+      POSTGRES_DB: support_platform
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis 快取
+  redis:
+    image: redis:7-alpine
+    container_name: support-platform-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # API Gateway
+  api-gateway:
+    build:
+      context: ./gateway
+      dockerfile: Dockerfile
+    container_name: support-platform-gateway
+    ports:
+      - "8000:8000"
+    environment:
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - REDIS_HOST=redis
+      - DB_HOST=postgres
+      - ROUTER_AGENT_URL=http://router-agent:8001
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./gateway:/app
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+
+  # Router Agent
+  router-agent:
+    build:
+      context: ./agents
+      dockerfile: Dockerfile
+    container_name: support-platform-router
+    ports:
+      - "8001:8001"
+    environment:
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - FAQ_AGENT_URL=http://faq-agent:8002
+      - ORDER_AGENT_URL=http://order-agent:8003
+    volumes:
+      - ./agents:/app
+    command: uvicorn router_agent:router_app --host 0.0.0.0 --port 8001 --reload
+
+  # FAQ Agent
+  faq-agent:
+    build:
+      context: ./agents
+      dockerfile: Dockerfile
+    container_name: support-platform-faq
+    ports:
+      - "8002:8002"
+    environment:
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - DB_HOST=postgres
+      - REDIS_HOST=redis
+    depends_on:
+      - postgres
+      - redis
+    volumes:
+      - ./agents:/app
+    command: uvicorn faq_agent:faq_app --host 0.0.0.0 --port 8002 --reload
+
+volumes:
+  postgres-data:
+  redis-data:
