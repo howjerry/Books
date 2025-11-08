@@ -1975,6 +1975,235 @@ async function handleTimeout(page, action, maxWait = 60000) {
 }
 ```
 
+**錯誤 3：網路連線問題**
+
+```typescript
+async function handleNetworkErrors(page, action, maxRetries = 3) {
+  for (let i = 0; i < maxRetries; i++) {
+    try {
+      await page.act(action);
+      return;
+
+    } catch (error) {
+      const isNetworkError = error.message.includes("net::") ||
+                             error.message.includes("ERR_") ||
+                             error.message.includes("timeout");
+
+      if (isNetworkError && i < maxRetries - 1) {
+        console.log(`網路錯誤 (嘗試 ${i + 1}/${maxRetries}), 重試中...`);
+        await new Promise(r => setTimeout(r, 2000 * (i + 1)));
+        continue;
+      }
+      throw error;
+    }
+  }
+}
+```
+
+### 4.5.4 監控與日誌系統
+
+在生產環境中，完善的監控和日誌系統至關重要。以下是如何為 Stagehand 測試構建監控系統。
+
+**結構化日誌記錄**：
+
+```typescript
+// src/skills/stagehand/utils/logger.ts
+class StagehandLogger {
+  private testId: string;
+  private startTime: number;
+  private events: Array<LogEvent> = [];
+
+  constructor(testName: string) {
+    this.testId = `${testName}-${Date.now()}`;
+    this.startTime = Date.now();
+  }
+
+  logAction(action: string, status: 'start' | 'success' | 'error', details?: any) {
+    const event = {
+      timestamp: Date.now(),
+      elapsed: Date.now() - this.startTime,
+      type: 'action',
+      action,
+      status,
+      details
+    };
+
+    this.events.push(event);
+
+    // 實時輸出
+    console.error(JSON.stringify({
+      testId: this.testId,
+      ...event
+    }));
+  }
+
+  logExtraction(data: any, duration: number) {
+    const event = {
+      timestamp: Date.now(),
+      elapsed: Date.now() - this.startTime,
+      type: 'extraction',
+      dataKeys: Object.keys(data),
+      duration
+    };
+
+    this.events.push(event);
+    console.error(JSON.stringify({ testId: this.testId, ...event }));
+  }
+
+  logError(error: Error, context: string) {
+    const event = {
+      timestamp: Date.now(),
+      elapsed: Date.now() - this.startTime,
+      type: 'error',
+      context,
+      message: error.message,
+      stack: error.stack
+    };
+
+    this.events.push(event);
+    console.error(JSON.stringify({ testId: this.testId, ...event }));
+  }
+
+  generateReport() {
+    const totalDuration = Date.now() - this.startTime;
+    const actions = this.events.filter(e => e.type === 'action');
+    const errors = this.events.filter(e => e.type === 'error');
+
+    return {
+      testId: this.testId,
+      totalDuration,
+      totalActions: actions.length,
+      successfulActions: actions.filter(a => a.status === 'success').length,
+      failedActions: actions.filter(a => a.status === 'error').length,
+      totalErrors: errors.length,
+      events: this.events
+    };
+  }
+}
+
+// 使用範例
+async function monitoredTest() {
+  const logger = new StagehandLogger('login-test');
+  const stagehand = new Stagehand({ env: "LOCAL", headless: true });
+
+  try {
+    await stagehand.init();
+    const page = stagehand.page;
+
+    logger.logAction('navigate', 'start', { url: 'https://example.com/login' });
+    await page.goto('https://example.com/login');
+    logger.logAction('navigate', 'success');
+
+    logger.logAction('enter-username', 'start');
+    await page.act("enter username", { text: "test@example.com" });
+    logger.logAction('enter-username', 'success');
+
+    logger.logAction('enter-password', 'start');
+    await page.act("enter password", { text: "password123" });
+    logger.logAction('enter-password', 'success');
+
+    logger.logAction('click-login', 'start');
+    await page.act("click login button");
+    logger.logAction('click-login', 'success');
+
+    const extractStart = Date.now();
+    const result = await page.extract({
+      isLoggedIn: "is the user logged in?",
+      username: "what is the username displayed?"
+    });
+    logger.logExtraction(result, Date.now() - extractStart);
+
+    const report = logger.generateReport();
+    console.log(JSON.stringify(report, null, 2));
+
+  } catch (error) {
+    logger.logError(error, 'test-execution');
+    throw error;
+
+  } finally {
+    await stagehand.close();
+  }
+}
+```
+
+**性能指標收集**：
+
+```python
+# src/skills/browser/monitoring.py
+import time
+import json
+from typing import Dict, Any, List
+from dataclasses import dataclass, asdict
+from datetime import datetime
+import logging
+
+logger = logging.getLogger(__name__)
+
+@dataclass
+class PerformanceMetric:
+    """性能指標"""
+    test_id: str
+    timestamp: str
+    action: str
+    duration_ms: float
+    success: bool
+    error: str = None
+
+class PerformanceMonitor:
+    """性能監控器"""
+
+    def __init__(self, test_name: str):
+        self.test_name = test_name
+        self.test_id = f"{test_name}_{int(time.time())}"
+        self.metrics: List[PerformanceMetric] = []
+        self.start_time = time.time()
+
+    def record_metric(
+        self,
+        action: str,
+        duration_ms: float,
+        success: bool,
+        error: str = None
+    ):
+        """記錄性能指標"""
+        metric = PerformanceMetric(
+            test_id=self.test_id,
+            timestamp=datetime.now().isoformat(),
+            action=action,
+            duration_ms=duration_ms,
+            success=success,
+            error=error
+        )
+        self.metrics.append(metric)
+        logger.info(f"Metric: {action} - {duration_ms:.2f}ms - {'✓' if success else '✗'}")
+
+    def get_summary(self) -> Dict[str, Any]:
+        """獲取測試摘要"""
+        total_duration = (time.time() - self.start_time) * 1000
+        successful = [m for m in self.metrics if m.success]
+        failed = [m for m in self.metrics if not m.success]
+
+        return {
+            "test_id": self.test_id,
+            "test_name": self.test_name,
+            "total_duration_ms": total_duration,
+            "total_actions": len(self.metrics),
+            "successful_actions": len(successful),
+            "failed_actions": len(failed),
+            "success_rate": f"{len(successful) / len(self.metrics) * 100:.1f}%" if self.metrics else "0%",
+            "avg_action_duration_ms": sum(m.duration_ms for m in self.metrics) / len(self.metrics) if self.metrics else 0,
+            "slowest_action": max(self.metrics, key=lambda m: m.duration_ms, default=None),
+            "metrics": [asdict(m) for m in self.metrics]
+        }
+
+    def export_to_json(self, filepath: str):
+        """匯出為 JSON"""
+        summary = self.get_summary()
+        with open(filepath, 'w') as f:
+            json.dump(summary, f, indent=2)
+        logger.info(f"Performance metrics exported to {filepath}")
+```
+
 ## 4.6 WebGuard 瀏覽器測試模組
 
 現在讓我們整合所有學到的知識，構建 WebGuard 的完整瀏覽器測試模組。
@@ -2248,6 +2477,975 @@ def execute_e2e_test(
             {"username": username, "password": password}
         )
     )
+```
+
+### 4.6.4 視覺回歸測試
+
+視覺回歸測試確保 UI 更改不會意外破壞頁面外觀。Stagehand 結合截圖比對工具可以實現強大的視覺測試。
+
+**安裝視覺測試工具**：
+
+```bash
+npm install pixelmatch pngjs
+```
+
+**視覺測試實作**：
+
+```typescript
+// src/skills/stagehand/visual.js
+const { Stagehand } = require("@browserbasehq/stagehand");
+const fs = require('fs');
+const PNG = require('pngjs').PNG;
+const pixelmatch = require('pixelmatch');
+
+class VisualRegressionTester {
+  constructor(options = {}) {
+    this.baselineDir = options.baselineDir || './visual-baselines';
+    this.outputDir = options.outputDir || './visual-results';
+    this.threshold = options.threshold || 0.1;  // 10% 差異閾值
+
+    // 確保目錄存在
+    [this.baselineDir, this.outputDir].forEach(dir => {
+      if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true });
+      }
+    });
+  }
+
+  async captureBaseline(page, name) {
+    """捕捉基準截圖"""
+    const screenshotPath = `${this.baselineDir}/${name}.png`;
+    await page.screenshot({
+      path: screenshotPath,
+      fullPage: true
+    });
+    console.log(`Baseline saved: ${screenshotPath}`);
+  }
+
+  async compareWithBaseline(page, name) {
+    """與基準截圖比對"""
+    const baselinePath = `${this.baselineDir}/${name}.png`;
+    const currentPath = `${this.outputDir}/${name}-current.png`;
+    const diffPath = `${this.outputDir}/${name}-diff.png`;
+
+    // 捕捉當前頁面
+    await page.screenshot({
+      path: currentPath,
+      fullPage: true
+    });
+
+    // 檢查基準是否存在
+    if (!fs.existsSync(baselinePath)) {
+      console.log(`No baseline found for ${name}, creating new baseline`);
+      fs.copyFileSync(currentPath, baselinePath);
+      return {
+        match: true,
+        diffPercentage: 0,
+        message: 'New baseline created'
+      };
+    }
+
+    // 讀取圖片
+    const baseline = PNG.sync.read(fs.readFileSync(baselinePath));
+    const current = PNG.sync.read(fs.readFileSync(currentPath));
+
+    // 檢查尺寸
+    if (baseline.width !== current.width || baseline.height !== current.height) {
+      return {
+        match: false,
+        diffPercentage: 100,
+        message: `Size mismatch: ${baseline.width}x${baseline.height} vs ${current.width}x${current.height}`
+      };
+    }
+
+    // 比對像素
+    const diff = new PNG({ width: baseline.width, height: baseline.height });
+    const numDiffPixels = pixelmatch(
+      baseline.data,
+      current.data,
+      diff.data,
+      baseline.width,
+      baseline.height,
+      { threshold: 0.1 }
+    );
+
+    // 保存差異圖
+    fs.writeFileSync(diffPath, PNG.sync.write(diff));
+
+    const totalPixels = baseline.width * baseline.height;
+    const diffPercentage = (numDiffPixels / totalPixels) * 100;
+
+    return {
+      match: diffPercentage <= this.threshold,
+      diffPercentage: diffPercentage.toFixed(2),
+      diffPixels: numDiffPixels,
+      totalPixels,
+      diffImagePath: diffPath
+    };
+  }
+
+  async runVisualTest(url, testName, actions = []) {
+    """執行完整的視覺測試"""
+    const stagehand = new Stagehand({
+      env: "LOCAL",
+      headless: true,
+      viewport: { width: 1920, height: 1080 }  // 固定視窗大小
+    });
+
+    try {
+      await stagehand.init();
+      const page = stagehand.page;
+
+      // 導航到頁面
+      await page.goto(url, { waitUntil: 'networkidle' });
+
+      // 執行預定義操作
+      for (const action of actions) {
+        if (action.type === 'act') {
+          await page.act(action.command);
+        } else if (action.type === 'wait') {
+          await page.observe(action.command);
+        } else if (action.type === 'delay') {
+          await new Promise(r => setTimeout(r, action.ms));
+        }
+      }
+
+      // 等待所有動畫完成
+      await new Promise(r => setTimeout(r, 500));
+
+      // 執行視覺比對
+      const result = await this.compareWithBaseline(page, testName);
+
+      console.log(JSON.stringify({
+        testName,
+        url,
+        ...result
+      }));
+
+      return result;
+
+    } finally {
+      await stagehand.close();
+    }
+  }
+}
+
+// 使用範例
+async function main() {
+  const tester = new VisualRegressionTester({
+    baselineDir: './baselines',
+    outputDir: './results',
+    threshold: 0.5  // 允許 0.5% 差異
+  });
+
+  // 測試 1: 首頁
+  await tester.runVisualTest(
+    'https://example.com',
+    'homepage'
+  );
+
+  // 測試 2: 登入頁面（已登入狀態）
+  await tester.runVisualTest(
+    'https://example.com/login',
+    'login-page',
+    [
+      { type: 'act', command: 'enter username', text: 'test@example.com' },
+      { type: 'act', command: 'enter password', text: 'password123' },
+      { type: 'act', command: 'click login' },
+      { type: 'wait', command: 'wait for dashboard to load' }
+    ]
+  );
+
+  // 測試 3: 響應式設計
+  await tester.runVisualTest(
+    'https://example.com',
+    'homepage-mobile',
+    []
+  );
+}
+
+main();
+```
+
+**Python 整合**：
+
+```python
+# src/skills/browser/visual_test.py
+import asyncio
+import json
+from pathlib import Path
+from typing import Dict, Any, List, Optional
+from .base import BrowserTestBase
+
+class VisualRegressionTester(BrowserTestBase):
+    """視覺回歸測試器"""
+
+    def __init__(
+        self,
+        baseline_dir: str = "visual-baselines",
+        output_dir: str = "visual-results",
+        threshold: float = 0.5,
+        **kwargs
+    ):
+        super().__init__(**kwargs)
+        self.baseline_dir = Path(baseline_dir)
+        self.output_dir = Path(output_dir)
+        self.threshold = threshold
+
+        # 創建目錄
+        self.baseline_dir.mkdir(parents=True, exist_ok=True)
+        self.output_dir.mkdir(parents=True, exist_ok=True)
+
+    async def run_visual_test(
+        self,
+        url: str,
+        test_name: str,
+        actions: Optional[List[Dict[str, Any]]] = None
+    ) -> Dict[str, Any]:
+        """
+        執行視覺回歸測試
+
+        Args:
+            url: 測試 URL
+            test_name: 測試名稱
+            actions: 在截圖前執行的操作列表
+
+        Returns:
+            視覺測試結果
+        """
+        result = await self.run_stagehand_script(
+            "visual",
+            url=url,
+            test_name=test_name,
+            baseline_dir=str(self.baseline_dir),
+            output_dir=str(self.output_dir),
+            threshold=self.threshold,
+            actions=json.dumps(actions or [])
+        )
+
+        return result
+
+    async def batch_visual_tests(
+        self,
+        test_configs: List[Dict[str, Any]]
+    ) -> Dict[str, Any]:
+        """
+        批次執行視覺測試
+
+        Args:
+            test_configs: 測試配置列表
+
+        Returns:
+            批次測試結果
+        """
+        results = []
+
+        for config in test_configs:
+            result = await self.run_visual_test(
+                url=config['url'],
+                test_name=config['name'],
+                actions=config.get('actions', [])
+            )
+
+            results.append({
+                "name": config['name'],
+                "url": config['url'],
+                "result": result
+            })
+
+        # 統計摘要
+        total = len(results)
+        passed = sum(1 for r in results if r['result'].get('match', False))
+        failed = total - passed
+
+        return {
+            "total_tests": total,
+            "passed": passed,
+            "failed": failed,
+            "success_rate": f"{passed / total * 100:.1f}%" if total > 0 else "0%",
+            "results": results
+        }
+
+
+def execute_visual_test(
+    url: str,
+    test_name: str,
+    actions: Optional[List[Dict[str, Any]]] = None,
+    threshold: float = 0.5
+) -> Dict[str, Any]:
+    """視覺測試 Skill 入口"""
+    tester = VisualRegressionTester(threshold=threshold)
+    return asyncio.run(tester.run_visual_test(url, test_name, actions))
+```
+
+### 4.6.5 性能監控與優化
+
+在大規模測試場景中，性能至關重要。以下是如何監控和優化 Stagehand 測試性能。
+
+**性能分析器**：
+
+```python
+# src/skills/browser/performance.py
+import time
+import asyncio
+from typing import Dict, Any, List, Callable
+from contextlib import asynccontextmanager
+import psutil
+import logging
+
+logger = logging.getLogger(__name__)
+
+class PerformanceAnalyzer:
+    """性能分析器"""
+
+    def __init__(self):
+        self.metrics = {
+            "cpu_samples": [],
+            "memory_samples": [],
+            "timings": {}
+        }
+
+    @asynccontextmanager
+    async def measure(self, operation_name: str):
+        """測量操作性能"""
+        start_time = time.time()
+        start_cpu = psutil.cpu_percent()
+        start_memory = psutil.Process().memory_info().rss / 1024 / 1024  # MB
+
+        try:
+            yield
+
+        finally:
+            end_time = time.time()
+            end_cpu = psutil.cpu_percent()
+            end_memory = psutil.Process().memory_info().rss / 1024 / 1024  # MB
+
+            duration = (end_time - start_time) * 1000  # ms
+
+            self.metrics["timings"][operation_name] = {
+                "duration_ms": duration,
+                "cpu_usage": (start_cpu + end_cpu) / 2,
+                "memory_delta_mb": end_memory - start_memory
+            }
+
+            logger.info(
+                f"{operation_name}: {duration:.2f}ms, "
+                f"CPU: {(start_cpu + end_cpu) / 2:.1f}%, "
+                f"Memory: {end_memory - start_memory:+.2f}MB"
+            )
+
+    def get_report(self) -> Dict[str, Any]:
+        """獲取性能報告"""
+        timings = list(self.metrics["timings"].values())
+
+        if not timings:
+            return {
+                "total_operations": 0,
+                "total_time_ms": 0
+            }
+
+        total_time = sum(t["duration_ms"] for t in timings)
+        avg_cpu = sum(t["cpu_usage"] for t in timings) / len(timings)
+        total_memory = sum(t["memory_delta_mb"] for t in timings)
+
+        return {
+            "total_operations": len(timings),
+            "total_time_ms": total_time,
+            "avg_time_ms": total_time / len(timings),
+            "avg_cpu_usage": f"{avg_cpu:.1f}%",
+            "total_memory_delta_mb": total_memory,
+            "slowest_operation": max(
+                self.metrics["timings"].items(),
+                key=lambda x: x[1]["duration_ms"]
+            ),
+            "details": self.metrics["timings"]
+        }
+
+
+# 使用範例
+async def analyze_test_performance():
+    analyzer = PerformanceAnalyzer()
+
+    async with analyzer.measure("page_load"):
+        # 模擬頁面載入
+        await asyncio.sleep(1.2)
+
+    async with analyzer.measure("form_fill"):
+        # 模擬表單填寫
+        await asyncio.sleep(0.5)
+
+    async with analyzer.measure("data_extraction"):
+        # 模擬數據提取
+        await asyncio.sleep(0.8)
+
+    report = analyzer.get_report()
+    print(json.dumps(report, indent=2))
+```
+
+**快取優化**：
+
+```typescript
+// src/skills/stagehand/cache-manager.ts
+class StagehandCacheManager {
+  private cache: Map<string, any>;
+  private maxSize: number;
+  private ttl: number;
+
+  constructor(maxSize: number = 100, ttl: number = 3600000) {
+    this.cache = new Map();
+    this.maxSize = maxSize;
+    this.ttl = ttl;  // 1 hour default
+  }
+
+  getCacheKey(url: string, action: string): string {
+    return `${url}::${action}`;
+  }
+
+  get(key: string): any | null {
+    const entry = this.cache.get(key);
+
+    if (!entry) {
+      return null;
+    }
+
+    // 檢查過期
+    if (Date.now() - entry.timestamp > this.ttl) {
+      this.cache.delete(key);
+      return null;
+    }
+
+    console.log(`Cache hit: ${key}`);
+    return entry.value;
+  }
+
+  set(key: string, value: any): void {
+    // LRU 淘汰
+    if (this.cache.size >= this.maxSize) {
+      const firstKey = this.cache.keys().next().value;
+      this.cache.delete(firstKey);
+    }
+
+    this.cache.set(key, {
+      value,
+      timestamp: Date.now()
+    });
+
+    console.log(`Cache set: ${key}`);
+  }
+
+  clear(): void {
+    this.cache.clear();
+    console.log('Cache cleared');
+  }
+
+  getStats() {
+    return {
+      size: this.cache.size,
+      maxSize: this.maxSize,
+      utilizationRate: `${(this.cache.size / this.maxSize * 100).toFixed(1)}%`
+    };
+  }
+}
+
+// 在 Stagehand 測試中使用快取
+const cacheManager = new StagehandCacheManager(100, 1800000);  // 30 分鐘 TTL
+
+async function cachedExtract(page, schema, cacheKey) {
+  // 嘗試從快取取得
+  const cached = cacheManager.get(cacheKey);
+  if (cached) {
+    return cached;
+  }
+
+  // 執行提取
+  const result = await page.extract(schema);
+
+  // 存入快取
+  cacheManager.set(cacheKey, result);
+
+  return result;
+}
+```
+
+### 4.6.6 並行測試執行
+
+對於大量測試，並行執行可以顯著縮短總執行時間。
+
+**並行測試執行器**：
+
+```python
+# src/skills/browser/parallel.py
+import asyncio
+from typing import List, Dict, Any, Callable
+from concurrent.futures import ThreadPoolExecutor
+import logging
+
+logger = logging.getLogger(__name__)
+
+class ParallelTestExecutor:
+    """並行測試執行器"""
+
+    def __init__(self, max_workers: int = 4):
+        """
+        初始化執行器
+
+        Args:
+            max_workers: 最大並行工作數
+        """
+        self.max_workers = max_workers
+        self.semaphore = asyncio.Semaphore(max_workers)
+
+    async def execute_test(
+        self,
+        test_func: Callable,
+        test_name: str,
+        **kwargs
+    ) -> Dict[str, Any]:
+        """
+        執行單個測試
+
+        Args:
+            test_func: 測試函數
+            test_name: 測試名稱
+            **kwargs: 測試參數
+
+        Returns:
+            測試結果
+        """
+        async with self.semaphore:
+            logger.info(f"Starting test: {test_name}")
+            start_time = time.time()
+
+            try:
+                result = await test_func(**kwargs)
+                duration = (time.time() - start_time) * 1000
+
+                logger.info(f"✓ Test passed: {test_name} ({duration:.0f}ms)")
+
+                return {
+                    "name": test_name,
+                    "status": "passed",
+                    "duration_ms": duration,
+                    "result": result
+                }
+
+            except Exception as e:
+                duration = (time.time() - start_time) * 1000
+
+                logger.error(f"✗ Test failed: {test_name} ({duration:.0f}ms) - {str(e)}")
+
+                return {
+                    "name": test_name,
+                    "status": "failed",
+                    "duration_ms": duration,
+                    "error": str(e)
+                }
+
+    async def execute_all(
+        self,
+        tests: List[Dict[str, Any]]
+    ) -> Dict[str, Any]:
+        """
+        並行執行所有測試
+
+        Args:
+            tests: 測試配置列表，每個包含 name, func, kwargs
+
+        Returns:
+            所有測試的結果摘要
+        """
+        start_time = time.time()
+
+        # 創建所有測試任務
+        tasks = [
+            self.execute_test(
+                test_func=test['func'],
+                test_name=test['name'],
+                **test.get('kwargs', {})
+            )
+            for test in tests
+        ]
+
+        # 並行執行
+        results = await asyncio.gather(*tasks, return_exceptions=True)
+
+        total_duration = (time.time() - start_time) * 1000
+
+        # 統計結果
+        passed = sum(1 for r in results if isinstance(r, dict) and r.get('status') == 'passed')
+        failed = sum(1 for r in results if isinstance(r, dict) and r.get('status') == 'failed')
+
+        return {
+            "total_tests": len(tests),
+            "passed": passed,
+            "failed": failed,
+            "success_rate": f"{passed / len(tests) * 100:.1f}%" if tests else "0%",
+            "total_duration_ms": total_duration,
+            "avg_duration_ms": total_duration / len(tests) if tests else 0,
+            "max_workers": self.max_workers,
+            "results": results
+        }
+
+
+# 使用範例
+async def example_parallel_execution():
+    from .login_test import BrowserLoginTester
+
+    executor = ParallelTestExecutor(max_workers=4)
+
+    # 定義測試套件
+    tests = [
+        {
+            "name": "login_test_user1",
+            "func": BrowserLoginTester().test_login,
+            "kwargs": {
+                "url": "https://example.com/login",
+                "username": "user1@example.com",
+                "password": "password1"
+            }
+        },
+        {
+            "name": "login_test_user2",
+            "func": BrowserLoginTester().test_login,
+            "kwargs": {
+                "url": "https://example.com/login",
+                "username": "user2@example.com",
+                "password": "password2"
+            }
+        },
+        {
+            "name": "login_test_user3",
+            "func": BrowserLoginTester().test_login,
+            "kwargs": {
+                "url": "https://example.com/login",
+                "username": "user3@example.com",
+                "password": "password3"
+            }
+        }
+    ]
+
+    # 執行所有測試
+    summary = await executor.execute_all(tests)
+
+    print(json.dumps(summary, indent=2))
+```
+
+## 4.8 最佳實踐與性能調優
+
+掌握最佳實踐能讓你的 Stagehand 測試更快、更穩定、更易維護。
+
+### 4.8.1 Stagehand 性能優化技巧
+
+**技巧 1：啟用快取**
+
+```typescript
+// ✓ 啟用快取可以減少 90% 的上下文使用量
+const stagehand = new Stagehand({
+  env: "LOCAL",
+  enableCaching: true,  // 啟用智能快取
+  headless: true
+});
+```
+
+**技巧 2：使用無頭模式**
+
+```typescript
+// ✓ 無頭模式比有頭模式快 30-40%
+const stagehand = new Stagehand({
+  env: "LOCAL",
+  headless: true,  // 生產環境始終使用無頭模式
+  verbose: 0       // 關閉詳細日誌以提升性能
+});
+```
+
+**技巧 3：優化選擇器描述**
+
+```typescript
+// ❌ 模糊描述，AI 需要掃描更多元素
+await page.act("click something");
+
+// ✓ 明確描述，AI 能快速定位
+await page.act("click the blue login button");
+
+// ✓ 包含上下文，提高準確性
+await page.act("click the submit button in the checkout form");
+```
+
+**技巧 4：批次操作**
+
+```typescript
+// ❌ 多次單獨提取，每次都要分析頁面
+const name = await page.extract({ name: "user name" });
+const email = await page.extract({ email: "user email" });
+const age = await page.extract({ age: "user age" });
+
+// ✓ 一次提取所有數據
+const userInfo = await page.extract({
+  name: "user name",
+  email: "user email",
+  age: "user age"
+});
+```
+
+**技巧 5：合理設置超時**
+
+```typescript
+// 根據操作類型設置適當的超時
+const stagehand = new Stagehand({
+  env: "LOCAL",
+  timeout: 30000  // 簡單頁面: 30 秒
+});
+
+// 對於複雜操作，動態調整
+await page.act("complete checkout", {
+  timeout: 120000  // 複雜流程: 2 分鐘
+});
+```
+
+### 4.8.2 資源管理與清理
+
+**正確的資源管理**：
+
+```python
+# src/skills/browser/resource_manager.py
+import asyncio
+from contextlib import asynccontextmanager
+from typing import Optional
+import logging
+
+logger = logging.getLogger(__name__)
+
+class BrowserResourceManager:
+    """瀏覽器資源管理器"""
+
+    def __init__(self):
+        self.active_browsers = []
+
+    @asynccontextmanager
+    async def managed_browser(self, headless: bool = True):
+        """管理瀏覽器生命週期的上下文管理器"""
+        browser_id = len(self.active_browsers)
+        logger.info(f"Opening browser {browser_id}")
+
+        # 這裡應該啟動實際的瀏覽器
+        browser = {
+            "id": browser_id,
+            "headless": headless,
+            "start_time": time.time()
+        }
+        self.active_browsers.append(browser)
+
+        try:
+            yield browser
+
+        finally:
+            # 確保資源被釋放
+            logger.info(f"Closing browser {browser_id}")
+            if browser in self.active_browsers:
+                self.active_browsers.remove(browser)
+
+            duration = time.time() - browser["start_time"]
+            logger.info(f"Browser {browser_id} was active for {duration:.2f}s")
+
+    async def cleanup_all(self):
+        """清理所有活動的瀏覽器"""
+        logger.info(f"Cleaning up {len(self.active_browsers)} active browsers")
+
+        for browser in self.active_browsers[:]:
+            logger.info(f"Force closing browser {browser['id']}")
+            # 執行清理邏輯
+            self.active_browsers.remove(browser)
+
+    def get_stats(self):
+        """獲取資源統計"""
+        return {
+            "active_browsers": len(self.active_browsers),
+            "browser_ids": [b["id"] for b in self.active_browsers]
+        }
+
+
+# 使用範例
+async def safe_browser_test():
+    manager = BrowserResourceManager()
+
+    async with manager.managed_browser(headless=True) as browser:
+        # 執行測試
+        logger.info(f"Running test with browser {browser['id']}")
+        await asyncio.sleep(1)
+        # 測試完成後自動清理
+
+    # 確保所有資源都被清理
+    await manager.cleanup_all()
+```
+
+### 4.8.3 除錯技巧與工具
+
+**除錯模式配置**：
+
+```typescript
+// debug.config.js - Stagehand 除錯配置
+const DEBUG_CONFIG = {
+  // 開發環境
+  development: {
+    headless: false,      // 顯示瀏覽器
+    verbose: 2,           // 最高日誌級別
+    debugDom: true,       // 輸出 DOM 分析
+    slowMo: 100,          // 減慢操作速度（毫秒）
+    devtools: true        // 自動打開 DevTools
+  },
+
+  // CI 環境
+  ci: {
+    headless: true,
+    verbose: 1,
+    debugDom: false,
+    slowMo: 0,
+    devtools: false
+  },
+
+  // 生產環境
+  production: {
+    headless: true,
+    verbose: 0,
+    debugDom: false,
+    slowMo: 0,
+    devtools: false
+  }
+};
+
+// 根據環境選擇配置
+const env = process.env.NODE_ENV || 'development';
+const config = DEBUG_CONFIG[env];
+
+const stagehand = new Stagehand({
+  env: "LOCAL",
+  ...config
+});
+```
+
+**交互式除錯**：
+
+```typescript
+// 在測試中設置斷點
+async function debugTest() {
+  const stagehand = new Stagehand({
+    env: "LOCAL",
+    headless: false,
+    devtools: true
+  });
+
+  await stagehand.init();
+  const page = stagehand.page;
+
+  await page.goto("https://example.com/login");
+
+  // 暫停執行，允許手動檢查
+  console.log("Paused for inspection. Press Enter to continue...");
+  await new Promise(resolve => {
+    process.stdin.once('data', resolve);
+  });
+
+  // 繼續執行
+  await page.act("enter username", { text: "test@example.com" });
+
+  // 另一個斷點
+  await page.evaluate(() => debugger);  // 觸發瀏覽器 debugger
+
+  await page.act("enter password", { text: "password123" });
+  await page.act("click login");
+
+  await stagehand.close();
+}
+```
+
+**截圖除錯**：
+
+```python
+# src/skills/browser/debug_helpers.py
+from pathlib import Path
+from datetime import datetime
+import base64
+
+class DebugHelper:
+    """除錯輔助工具"""
+
+    def __init__(self, debug_dir: str = "debug-screenshots"):
+        self.debug_dir = Path(debug_dir)
+        self.debug_dir.mkdir(parents=True, exist_ok=True)
+        self.screenshot_counter = 0
+
+    def save_debug_screenshot(
+        self,
+        screenshot_base64: str,
+        context: str = "debug"
+    ) -> str:
+        """
+        保存除錯截圖
+
+        Args:
+            screenshot_base64: Base64 編碼的截圖
+            context: 上下文描述
+
+        Returns:
+            保存的文件路徑
+        """
+        self.screenshot_counter += 1
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        filename = f"{self.screenshot_counter:03d}_{context}_{timestamp}.png"
+        filepath = self.debug_dir / filename
+
+        # 解碼並保存
+        image_data = base64.b64decode(screenshot_base64)
+        with open(filepath, 'wb') as f:
+            f.write(image_data)
+
+        logger.info(f"Debug screenshot saved: {filepath}")
+        return str(filepath)
+
+    def create_debug_report(
+        self,
+        test_name: str,
+        steps: List[Dict[str, Any]],
+        error: Optional[Exception] = None
+    ) -> str:
+        """
+        創建除錯報告
+
+        Args:
+            test_name: 測試名稱
+            steps: 測試步驟列表
+            error: 錯誤信息（如果有）
+
+        Returns:
+            報告文件路徑
+        """
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        report_path = self.debug_dir / f"{test_name}_{timestamp}_report.md"
+
+        with open(report_path, 'w', encoding='utf-8') as f:
+            f.write(f"# Debug Report: {test_name}\n\n")
+            f.write(f"**Time**: {datetime.now().isoformat()}\n\n")
+
+            if error:
+                f.write(f"## Error\n\n")
+                f.write(f"```\n{str(error)}\n```\n\n")
+
+            f.write(f"## Test Steps\n\n")
+            for i, step in enumerate(steps, 1):
+                f.write(f"### Step {i}: {step.get('action', 'Unknown')}\n\n")
+                f.write(f"- Status: {step.get('status', 'Unknown')}\n")
+                f.write(f"- Duration: {step.get('duration_ms', 0):.0f}ms\n")
+
+                if step.get('screenshot'):
+                    f.write(f"- Screenshot: {step['screenshot']}\n")
+
+                if step.get('error'):
+                    f.write(f"- Error: `{step['error']}`\n")
+
+                f.write("\n")
+
+        logger.info(f"Debug report created: {report_path}")
+        return str(report_path)
 ```
 
 ## 4.7 本章總結

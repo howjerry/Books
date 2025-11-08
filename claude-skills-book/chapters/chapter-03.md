@@ -1646,6 +1646,684 @@ def test_health_checker_success():
     assert result['status_code'] == 200
 ```
 
+### 3.6.4 斷路器模式（Circuit Breaker Pattern）
+
+當外部服務不穩定時，避免無謂的重試可以保護系統資源。斷路器模式在連續失敗後自動「斷路」，一段時間後再嘗試恢復。
+
+```python
+from enum import Enum
+from datetime import datetime, timedelta
+from typing import Callable, Any
+import threading
+
+class CircuitState(Enum):
+    """斷路器狀態"""
+    CLOSED = "closed"      # 正常運行
+    OPEN = "open"          # 斷路（拒絕請求）
+    HALF_OPEN = "half_open"  # 半開（測試恢復）
+
+class CircuitBreaker:
+    """
+    斷路器實現
+
+    當失敗率超過閾值時，自動斷路，避免連鎖失敗
+    """
+
+    def __init__(
+        self,
+        failure_threshold: int = 5,
+        recovery_timeout: int = 60,
+        expected_exception: type = Exception
+    ):
+        """
+        初始化斷路器
+
+        Args:
+            failure_threshold: 觸發斷路的連續失敗次數
+            recovery_timeout: 斷路後等待恢復的時間（秒）
+            expected_exception: 預期的異常類型
+        """
+        self.failure_threshold = failure_threshold
+        self.recovery_timeout = recovery_timeout
+        self.expected_exception = expected_exception
+
+        self.failure_count = 0
+        self.last_failure_time = None
+        self.state = CircuitState.CLOSED
+        self._lock = threading.Lock()
+
+    def call(self, func: Callable, *args, **kwargs) -> Any:
+        """
+        執行函數，並根據結果更新斷路器狀態
+
+        Args:
+            func: 要執行的函數
+            *args, **kwargs: 函數參數
+
+        Returns:
+            函數執行結果
+
+        Raises:
+            CircuitBreakerOpenError: 斷路器處於開路狀態
+        """
+        with self._lock:
+            if self.state == CircuitState.OPEN:
+                # 檢查是否應該嘗試恢復
+                if self._should_attempt_reset():
+                    self.state = CircuitState.HALF_OPEN
+                else:
+                    raise CircuitBreakerOpenError(
+                        f"Circuit breaker is OPEN. "
+                        f"Will retry after {self.recovery_timeout}s"
+                    )
+
+        try:
+            result = func(*args, **kwargs)
+            self._on_success()
+            return result
+
+        except self.expected_exception as e:
+            self._on_failure()
+            raise
+
+    def _should_attempt_reset(self) -> bool:
+        """檢查是否應該嘗試恢復"""
+        if self.last_failure_time is None:
+            return False
+
+        elapsed = (datetime.now() - self.last_failure_time).total_seconds()
+        return elapsed >= self.recovery_timeout
+
+    def _on_success(self):
+        """成功時重置計數器"""
+        with self._lock:
+            self.failure_count = 0
+            if self.state == CircuitState.HALF_OPEN:
+                logger.info("Circuit breaker recovered, state: CLOSED")
+                self.state = CircuitState.CLOSED
+
+    def _on_failure(self):
+        """失敗時更新計數器"""
+        with self._lock:
+            self.failure_count += 1
+            self.last_failure_time = datetime.now()
+
+            if self.failure_count >= self.failure_threshold:
+                if self.state != CircuitState.OPEN:
+                    logger.warning(
+                        f"Circuit breaker OPEN after {self.failure_count} failures"
+                    )
+                    self.state = CircuitState.OPEN
+
+
+class CircuitBreakerOpenError(Exception):
+    """斷路器開路錯誤"""
+    pass
+
+
+# 使用範例
+circuit_breaker = CircuitBreaker(
+    failure_threshold=5,
+    recovery_timeout=60,
+    expected_exception=requests.RequestException
+)
+
+def fetch_with_circuit_breaker(url: str) -> dict:
+    """使用斷路器保護的請求"""
+    try:
+        response = circuit_breaker.call(requests.get, url, timeout=10)
+        return {
+            "success": True,
+            "data": response.json()
+        }
+    except CircuitBreakerOpenError as e:
+        logger.warning(f"Circuit breaker prevented request: {e}")
+        return {
+            "success": False,
+            "error": "Service temporarily unavailable",
+            "retry_after": circuit_breaker.recovery_timeout
+        }
+    except Exception as e:
+        logger.error(f"Request failed: {e}")
+        return {
+            "success": False,
+            "error": str(e)
+        }
+```
+
+### 3.6.5 版本控制與向後兼容
+
+Skill 會持續演進，但不應破壞現有用戶的使用。良好的版本控制策略至關重要。
+
+**策略 1：語義化版本控制（Semantic Versioning）**
+
+```markdown
+## Metadata
+- Version: 2.1.0
+- Breaking Changes: None since 2.0.0
+- Deprecated: `use_cache` parameter (will be removed in 3.0.0)
+- Minimum Claude Code Version: 0.5.0
+
+## Changelog
+
+### [2.1.0] - 2025-01-15
+#### Added
+- New parameter `headers` for custom HTTP headers
+- Support for HTTPS certificate validation control
+
+#### Changed
+- Improved error messages with actionable suggestions
+- Enhanced retry logic with exponential backoff
+
+#### Deprecated
+- `use_cache` parameter (use `cache_strategy` instead)
+
+### [2.0.0] - 2024-12-01
+#### Breaking Changes
+- Renamed `check_url` to `url` for consistency
+- Changed return format: `healthy` → `is_healthy`
+
+#### Migration Guide
+```python
+# Old (v1.x)
+result = health_check(check_url="https://example.com")
+if result['healthy']:
+    print("OK")
+
+# New (v2.x)
+result = health_check(url="https://example.com")
+if result['is_healthy']:
+    print("OK")
+```
+```
+
+**策略 2：向後兼容的參數處理**
+
+```python
+from typing import Optional
+from pydantic import BaseModel, Field, validator
+import warnings
+
+class HealthCheckParams(BaseModel):
+    """健康檢查參數（向後兼容設計）"""
+
+    # 新參數
+    url: str = Field(..., description="Website URL to check")
+
+    # 已廢棄參數（保留以支持舊版）
+    check_url: Optional[str] = Field(
+        default=None,
+        deprecated=True,
+        description="[DEPRECATED] Use 'url' instead. Will be removed in v3.0.0"
+    )
+
+    # 參數重命名處理
+    @validator('url', pre=True, always=True)
+    def handle_legacy_params(cls, v, values):
+        """處理舊版參數"""
+        # 如果使用舊參數 check_url
+        if v is None and 'check_url' in values and values['check_url']:
+            warnings.warn(
+                "Parameter 'check_url' is deprecated and will be removed in v3.0.0. "
+                "Use 'url' instead.",
+                DeprecationWarning,
+                stacklevel=2
+            )
+            return values['check_url']
+        return v
+
+    # 返回格式兼容
+    cache_strategy: str = Field(default="auto")
+    use_cache: Optional[bool] = Field(
+        default=None,
+        deprecated=True
+    )
+
+    @validator('cache_strategy', pre=True, always=True)
+    def handle_legacy_cache(cls, v, values):
+        """將舊的 use_cache 轉換為 cache_strategy"""
+        if 'use_cache' in values and values['use_cache'] is not None:
+            warnings.warn(
+                "Parameter 'use_cache' is deprecated. Use 'cache_strategy' instead.",
+                DeprecationWarning
+            )
+            return "enabled" if values['use_cache'] else "disabled"
+        return v
+```
+
+### 3.6.6 性能優化技巧
+
+高性能的 Skill 提供更好的用戶體驗。以下是實用的優化技巧。
+
+**技巧 1：連接池（Connection Pooling）**
+
+```python
+from urllib3.util.retry import Retry
+from requests.adapters import HTTPAdapter
+
+class OptimizedHealthChecker:
+    """優化的健康檢查器（使用連接池）"""
+
+    def __init__(self):
+        self.session = requests.Session()
+
+        # 配置連接池
+        adapter = HTTPAdapter(
+            pool_connections=10,  # 連接池大小
+            pool_maxsize=20,      # 最大連接數
+            max_retries=Retry(
+                total=3,
+                backoff_factor=0.3,
+                status_forcelist=[500, 502, 503, 504]
+            )
+        )
+
+        self.session.mount('http://', adapter)
+        self.session.mount('https://', adapter)
+
+        # 設置預設 headers（避免每次請求重複設置）
+        self.session.headers.update({
+            'User-Agent': 'WebGuard-HealthChecker/2.0',
+            'Accept-Encoding': 'gzip, deflate'
+        })
+
+    def check(self, url: str) -> dict:
+        """執行健康檢查（重用連接）"""
+        response = self.session.get(url, timeout=10)
+        return {
+            'is_healthy': response.status_code == 200,
+            'status_code': response.status_code,
+            'response_time_ms': response.elapsed.total_seconds() * 1000
+        }
+
+    def __del__(self):
+        """清理資源"""
+        if hasattr(self, 'session'):
+            self.session.close()
+```
+
+**技巧 2：快取（Caching）**
+
+```python
+from functools import lru_cache
+from datetime import datetime, timedelta
+import hashlib
+
+class CachedHealthChecker:
+    """帶快取的健康檢查器"""
+
+    def __init__(self, cache_ttl: int = 300):
+        """
+        Args:
+            cache_ttl: 快取存活時間（秒）
+        """
+        self.cache_ttl = cache_ttl
+        self.cache = {}
+
+    def check(self, url: str, bypass_cache: bool = False) -> dict:
+        """執行健康檢查（帶快取）"""
+        cache_key = self._get_cache_key(url)
+
+        # 檢查快取
+        if not bypass_cache and cache_key in self.cache:
+            cached_entry = self.cache[cache_key]
+            age = (datetime.now() - cached_entry['timestamp']).total_seconds()
+
+            if age < self.cache_ttl:
+                logger.debug(f"Cache hit for {url} (age: {age:.1f}s)")
+                result = cached_entry['result'].copy()
+                result['from_cache'] = True
+                result['cache_age_s'] = age
+                return result
+
+        # 執行檢查
+        result = self._do_check(url)
+
+        # 更新快取
+        self.cache[cache_key] = {
+            'result': result,
+            'timestamp': datetime.now()
+        }
+
+        # 清理過期快取
+        self._cleanup_cache()
+
+        result['from_cache'] = False
+        return result
+
+    def _get_cache_key(self, url: str) -> str:
+        """生成快取鍵"""
+        return hashlib.md5(url.encode()).hexdigest()
+
+    def _do_check(self, url: str) -> dict:
+        """實際執行檢查"""
+        # ... 實作檢查邏輯
+        pass
+
+    def _cleanup_cache(self):
+        """清理過期快取項目"""
+        now = datetime.now()
+        expired_keys = [
+            key for key, entry in self.cache.items()
+            if (now - entry['timestamp']).total_seconds() > self.cache_ttl
+        ]
+
+        for key in expired_keys:
+            del self.cache[key]
+
+        if expired_keys:
+            logger.debug(f"Cleaned up {len(expired_keys)} expired cache entries")
+```
+
+**技巧 3：並行處理（Parallelization）**
+
+```python
+import asyncio
+import aiohttp
+from typing import List, Dict
+
+class AsyncHealthChecker:
+    """異步健康檢查器（支持並行檢查）"""
+
+    async def check_many(
+        self,
+        urls: List[str],
+        max_concurrent: int = 10
+    ) -> List[Dict]:
+        """
+        並行檢查多個 URL
+
+        Args:
+            urls: URL 列表
+            max_concurrent: 最大並發數
+
+        Returns:
+            檢查結果列表
+        """
+        # 創建信號量限制並發數
+        semaphore = asyncio.Semaphore(max_concurrent)
+
+        async def check_with_semaphore(url: str) -> Dict:
+            async with semaphore:
+                return await self.check_one(url)
+
+        # 並行執行所有檢查
+        tasks = [check_with_semaphore(url) for url in urls]
+        results = await asyncio.gather(*tasks, return_exceptions=True)
+
+        # 處理異常
+        processed_results = []
+        for url, result in zip(urls, results):
+            if isinstance(result, Exception):
+                processed_results.append({
+                    'url': url,
+                    'is_healthy': False,
+                    'error': str(result)
+                })
+            else:
+                processed_results.append(result)
+
+        return processed_results
+
+    async def check_one(self, url: str) -> Dict:
+        """異步檢查單個 URL"""
+        start_time = asyncio.get_event_loop().time()
+
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.get(url, timeout=10) as response:
+                    elapsed = (asyncio.get_event_loop().time() - start_time) * 1000
+
+                    return {
+                        'url': url,
+                        'is_healthy': response.status == 200,
+                        'status_code': response.status,
+                        'response_time_ms': elapsed
+                    }
+
+        except Exception as e:
+            return {
+                'url': url,
+                'is_healthy': False,
+                'error': str(e)
+            }
+
+
+# 使用範例
+async def main():
+    checker = AsyncHealthChecker()
+
+    urls = [
+        "https://example.com",
+        "https://google.com",
+        "https://github.com",
+        # ... 可以是數百個 URL
+    ]
+
+    results = await checker.check_many(urls, max_concurrent=20)
+
+    for result in results:
+        status = "✓" if result['is_healthy'] else "✗"
+        print(f"{status} {result['url']}: {result.get('status_code', 'ERROR')}")
+
+# 執行
+asyncio.run(main())
+```
+
+### 3.6.7 安全考量
+
+安全性在 Skills 開發中不可忽視。以下是關鍵的安全實踐。
+
+**1. 輸入驗證與消毒**
+
+```python
+from urllib.parse import urlparse
+import re
+
+class SecureHealthChecker:
+    """安全的健康檢查器"""
+
+    # 允許的 URL schemes
+    ALLOWED_SCHEMES = {'http', 'https'}
+
+    # 禁止的內網 IP 範圍（防止 SSRF）
+    BLOCKED_IP_PATTERNS = [
+        r'^127\.',           # localhost
+        r'^10\.',            # Private Class A
+        r'^172\.(1[6-9]|2[0-9]|3[0-1])\.',  # Private Class B
+        r'^192\.168\.',      # Private Class C
+        r'^169\.254\.',      # Link-local
+        r'^::1$',            # IPv6 localhost
+        r'^fc00:',           # IPv6 private
+    ]
+
+    def validate_url(self, url: str) -> tuple[bool, str]:
+        """
+        驗證 URL 安全性
+
+        Returns:
+            (is_valid, error_message)
+        """
+        try:
+            parsed = urlparse(url)
+
+            # 檢查 scheme
+            if parsed.scheme not in self.ALLOWED_SCHEMES:
+                return False, f"Invalid scheme: {parsed.scheme}. Only {self.ALLOWED_SCHEMES} allowed"
+
+            # 檢查是否有 hostname
+            if not parsed.netloc:
+                return False, "URL must have a hostname"
+
+            # 檢查是否為內網地址（防止 SSRF 攻擊）
+            hostname = parsed.netloc.split(':')[0]  # 移除端口
+
+            for pattern in self.BLOCKED_IP_PATTERNS:
+                if re.match(pattern, hostname):
+                    return False, f"Private IP addresses are not allowed: {hostname}"
+
+            # 檢查 URL 長度（防止 DoS）
+            if len(url) > 2048:
+                return False, "URL too long (max 2048 characters)"
+
+            return True, ""
+
+        except Exception as e:
+            return False, f"Invalid URL format: {str(e)}"
+
+    def check(self, url: str) -> dict:
+        """安全的健康檢查"""
+        # 驗證 URL
+        is_valid, error_msg = self.validate_url(url)
+        if not is_valid:
+            logger.warning(f"URL validation failed: {error_msg}")
+            return {
+                'is_healthy': False,
+                'error': error_msg,
+                'error_type': 'SECURITY_VIOLATION'
+            }
+
+        # 執行檢查（已驗證安全）
+        try:
+            response = requests.get(
+                url,
+                timeout=10,
+                allow_redirects=True,
+                max_redirects=5,  # 限制重定向次數
+                verify=True       # 驗證 SSL 證書
+            )
+
+            return {
+                'is_healthy': response.status_code == 200,
+                'status_code': response.status_code
+            }
+
+        except requests.exceptions.SSLError as e:
+            logger.error(f"SSL verification failed: {e}")
+            return {
+                'is_healthy': False,
+                'error': 'SSL certificate verification failed',
+                'error_type': 'SSL_ERROR'
+            }
+```
+
+**2. 密鑰管理**
+
+```python
+import os
+from cryptography.fernet import Fernet
+
+class SecureConfigManager:
+    """安全的配置管理器"""
+
+    def __init__(self):
+        # 從環境變數獲取加密金鑰
+        key = os.getenv('WEBGUARD_ENCRYPTION_KEY')
+        if not key:
+            raise ValueError("WEBGUARD_ENCRYPTION_KEY environment variable not set")
+
+        self.cipher = Fernet(key.encode())
+
+    def encrypt_api_key(self, api_key: str) -> str:
+        """加密 API 金鑰"""
+        return self.cipher.encrypt(api_key.encode()).decode()
+
+    def decrypt_api_key(self, encrypted_key: str) -> str:
+        """解密 API 金鑰"""
+        return self.cipher.decrypt(encrypted_key.encode()).decode()
+
+
+# 使用範例
+config_manager = SecureConfigManager()
+
+# ❌ 不要這樣做
+api_key = "sk-ant-1234567890"  # 硬編碼金鑰
+
+# ✅ 應該這樣做
+api_key = os.getenv('ANTHROPIC_API_KEY')  # 從環境變數讀取
+
+# 如果需要存儲，先加密
+encrypted = config_manager.encrypt_api_key(api_key)
+# 存入數據庫...
+
+# 使用時解密
+decrypted = config_manager.decrypt_api_key(encrypted)
+```
+
+**3. 速率限制（Rate Limiting）**
+
+```python
+import time
+from collections import deque
+from threading import Lock
+
+class RateLimiter:
+    """簡單的速率限制器"""
+
+    def __init__(self, max_calls: int, time_window: int):
+        """
+        Args:
+            max_calls: 時間窗口內的最大調用次數
+            time_window: 時間窗口（秒）
+        """
+        self.max_calls = max_calls
+        self.time_window = time_window
+        self.calls = deque()
+        self.lock = Lock()
+
+    def acquire(self) -> bool:
+        """
+        嘗試獲取執行許可
+
+        Returns:
+            是否允許執行
+        """
+        with self.lock:
+            now = time.time()
+
+            # 移除過期的調用記錄
+            while self.calls and self.calls[0] < now - self.time_window:
+                self.calls.popleft()
+
+            # 檢查是否超過限制
+            if len(self.calls) >= self.max_calls:
+                return False
+
+            # 記錄本次調用
+            self.calls.append(now)
+            return True
+
+    def wait_if_needed(self) -> float:
+        """
+        如果超過限制則等待
+
+        Returns:
+            等待時間（秒）
+        """
+        while not self.acquire():
+            # 計算需要等待的時間
+            with self.lock:
+                if self.calls:
+                    oldest_call = self.calls[0]
+                    wait_time = (oldest_call + self.time_window) - time.time()
+                    if wait_time > 0:
+                        time.sleep(wait_time)
+                        return wait_time
+        return 0
+
+
+# 使用範例
+rate_limiter = RateLimiter(max_calls=10, time_window=60)  # 每分鐘最多 10 次
+
+def rate_limited_check(url: str) -> dict:
+    """帶速率限制的健康檢查"""
+    if not rate_limiter.acquire():
+        wait_time = rate_limiter.wait_if_needed()
+        logger.warning(f"Rate limit exceeded, waited {wait_time:.1f}s")
+
+    return check_health(url)
+```
+
 ## 3.7 本章總結
 
 恭喜！你已經掌握了 Claude Code Skills 的核心概念。讓我們回顧關鍵要點：
