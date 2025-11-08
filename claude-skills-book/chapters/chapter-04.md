@@ -18,6 +18,8 @@
 學完本章，你將能夠構建穩健、易維護的瀏覽器自動化測試。
 
 ## 4.1 認識 Stagehand
+> 💡 **前置知識**：本章假設你已了解 Skills 基本概念（**Chapter 3**）。如需複習 SKILL.md 語法，返回 **Chapter 3.1-3.2**。
+
 
 ### 4.1.1 瀏覽器自動化的演進
 
@@ -2205,6 +2207,8 @@ class PerformanceMonitor:
 ```
 
 ## 4.6 WebGuard 瀏覽器測試模組
+> 🔗 **系統整合**：本節的瀏覽器測試模組是 WebGuard 執行層的一部分。完整的四層架構見 **Chapter 9**，CI/CD 整合見 **Chapter 8**。
+
 
 現在讓我們整合所有學到的知識，構建 WebGuard 的完整瀏覽器測試模組。
 
@@ -3135,6 +3139,8 @@ async def example_parallel_execution():
 掌握最佳實踐能讓你的 Stagehand 測試更快、更穩定、更易維護。
 
 ### 4.8.1 Stagehand 性能優化技巧
+> ⚡ **企業級優化**：生產環境的性能調優、資源管理、成本控制等進階主題，詳見 **Chapter 10.3**。
+
 
 **技巧 1：啟用快取**
 
@@ -3447,6 +3453,9 @@ class DebugHelper:
         logger.info(f"Debug report created: {report_path}")
         return str(report_path)
 ```
+
+
+> 🎯 **學習路徑**：掌握瀏覽器自動化後，繼續 **Chapter 5**（數據處理）和 **Chapter 6**（API 測試），完整 WebGuard 技能棧。
 
 ## 4.7 本章總結
 

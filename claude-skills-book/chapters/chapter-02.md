@@ -713,7 +713,9 @@ git add .
 git commit -m "Initial WebGuard project setup"
 ```
 
-## 2.3 創建第一個 Skill：網站健康檢查
+## 2.3 創建第一個 Skill
+> 💡 **進階閱讀**：本節介紹基礎 Skill 結構。關於 SKILL.md 的完整語法規範、參數驗證、錯誤處理等進階主題，詳見 **Chapter 3**。
+：網站健康檢查
 
 現在環境已經準備好，讓我們創建第一個真正的 Skill！
 

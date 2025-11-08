@@ -1,4 +1,6 @@
-# 第 7 章：Skills 進階模式與編排
+# 第 7 章
+> 🎯 **進階階段**：本章探討 Skills 組合與編排。需具備 **Chapters 3-6** 的基礎，特別是 **Chapter 3** 的核心概念。
+：Skills 進階模式與編排
 
 前幾章中，我們學習了單一 Skill 的開發：瀏覽器自動化（Chapter 4）、數據處理（Chapter 5）、API 測試（Chapter 6）。但在實際場景中，複雜的自動化工作流往往需要**組合多個 Skills**：先用 API Skill 創建測試數據，再用瀏覽器 Skill 驗證 UI，最後用數據處理 Skill 生成報告。本章將探討 Skills 的編排（Orchestration）技術：順序執行、並行執行、條件分支、錯誤恢復、動態參數傳遞，以及如何設計可重用的工作流模式。
 

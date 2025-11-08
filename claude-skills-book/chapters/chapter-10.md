@@ -1,4 +1,6 @@
-# 第 10 章：企業部署、安全與 MCP 生態
+# 第 10 章
+> 🚀 **最終章**：本章涵蓋企業級部署、安全與 MCP 生態。回顧安全設計見 **Chapter 3.6.7**，性能優化見 **Chapter 4.8**。
+：企業部署、安全與 MCP 生態
 
 前九章構建了完整的 WebGuard 測試平台：從 Skills 開發、編排、CI/CD，到完整的四層架構。本章將探討企業級部署的關鍵主題：Kubernetes 生產環境部署、安全最佳實踐、密鑰管理、MCP（Model Context Protocol）整合，以及未來展望。這是將系統從「可運行」提升到「生產就緒」的最後一哩路。
 
@@ -324,6 +326,8 @@ async def trigger_execution(request: Request, ...):
 
 
 ## 10.2 Kubernetes 生產環境部署
+> 📦 **容器化基礎**：K8s 部署前需要容器化（**Chapter 9.7**）。配置範本詳見 **附錄 B**。
+
 
 ### 10.2.1 Kubernetes 資源清單
 

@@ -1,4 +1,6 @@
-# 第 9 章：完整測試系統架構（WebGuard）
+# 第 9 章
+> 🏗️ **系統架構**：本章整合 **Chapters 1-8** 的所有內容，構建完整的 WebGuard 系統。建議按順序學習前面章節。
+：完整測試系統架構（WebGuard）
 
 前八章我們分別探討了 Skills 開發（Chapter 3）、瀏覽器自動化（Chapter 4）、數據處理（Chapter 5）、API 測試（Chapter 6）、Skills 編排（Chapter 7）、CI/CD 整合（Chapter 8）。本章將整合所有技術，構建一個生產級的**企業測試平台 WebGuard**：四層架構設計、微服務化部署、高可用性、監控告警、可擴展性。這是一個真實可部署的系統，不只是示範代碼。
 

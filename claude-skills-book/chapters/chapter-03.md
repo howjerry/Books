@@ -15,6 +15,8 @@
 學完本章，你將具備設計和實作專業級 Skills 的能力。
 
 ## 3.1 SKILL.md 完整語法規範
+> 📖 **實作範例**：想看完整的 SKILL.md 實作？參考 **Chapter 4.3**（瀏覽器登入測試）、**Chapter 5.2**（Excel 數據處理）、**Chapter 6.2**（API 健康檢查）。
+
 
 SKILL.md 是 Skills 系統的核心。它不僅是文檔，更是 Claude 理解和使用 Skill 的關鍵介面。一個設計良好的 SKILL.md 能讓 Claude 準確理解 Skill 的用途、正確準備參數、優雅處理錯誤。
 
@@ -2323,6 +2325,9 @@ def rate_limited_check(url: str) -> dict:
 
     return check_health(url)
 ```
+
+
+> 🚀 **下一步**：掌握 Skills 核心概念後，接下來學習 **Chapter 4** 的 Stagehand 瀏覽器自動化，這是構建 WebGuard 系統的關鍵技術。
 
 ## 3.7 本章總結
 
