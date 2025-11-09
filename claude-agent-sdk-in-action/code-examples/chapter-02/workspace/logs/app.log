@@ -1,0 +1,10 @@
+2025-11-08 10:23:15 INFO User login successful: user_id=1234
+2025-11-08 10:24:01 ERROR Database connection timeout: host=db1.example.com
+2025-11-08 10:25:33 WARNING Slow query detected: query_time=3.2s
+2025-11-08 10:26:12 INFO User logout: user_id=1234
+2025-11-08 10:27:45 ERROR Failed to send email: recipient=user@example.com
+2025-11-08 10:28:10 ERROR Database connection timeout: host=db1.example.com
+2025-11-08 10:29:22 INFO API request: /api/users GET 200
+2025-11-08 10:30:01 ERROR Payment processing failed: transaction_id=TX789
+2025-11-08 10:31:15 WARNING Cache miss: key=user_profile_1234
+2025-11-08 10:32:40 ERROR Database connection timeout: host=db1.example.com

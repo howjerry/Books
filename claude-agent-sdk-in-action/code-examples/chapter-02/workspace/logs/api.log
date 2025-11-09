@@ -1,0 +1,10 @@
+2025-11-08 10:00:00 GET /api/users 200 42ms
+2025-11-08 10:00:12 POST /api/auth/login 200 156ms
+2025-11-08 10:00:25 GET /api/products 200 38ms
+2025-11-08 10:00:40 GET /api/users 200 35ms
+2025-11-08 10:01:00 POST /api/orders 201 245ms
+2025-11-08 10:01:15 GET /api/products 200 41ms
+2025-11-08 10:01:30 GET /api/users 200 39ms
+2025-11-08 10:01:45 GET /api/orders 200 52ms
+2025-11-08 10:02:00 POST /api/auth/logout 200 28ms
+2025-11-08 10:02:15 GET /api/users 200 37ms

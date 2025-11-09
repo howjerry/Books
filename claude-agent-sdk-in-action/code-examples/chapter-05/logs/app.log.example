@@ -1,0 +1,10 @@
+2025-11-08 14:30:15 ERROR Database connection timeout: host=db1.example.com
+2025-11-08 14:30:16 ERROR Database connection timeout: host=db1.example.com
+2025-11-08 14:30:17 WARNING Slow query detected: query_time=3.2s
+2025-11-08 14:30:18 INFO User login successful: user_id=1234
+2025-11-08 14:30:19 ERROR Failed to send email: recipient=user@example.com
+2025-11-08 14:30:20 ERROR Payment processing failed: transaction_id=TX789
+2025-11-08 14:30:21 WARNING Cache miss: key=user_profile_1234
+2025-11-08 14:30:22 ERROR API timeout: endpoint=/api/products timeout=5000ms
+2025-11-08 14:30:23 ERROR API timeout: endpoint=/api/products timeout=5000ms
+2025-11-08 14:30:24 CRITICAL System memory usage: 95%

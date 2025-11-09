@@ -1,0 +1,33 @@
+# API 框架
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+pydantic==2.5.0
+
+# Anthropic SDK
+anthropic==0.34.0
+
+# 資料庫
+asyncpg==0.29.0
+psycopg2-binary==2.9.9
+
+# Redis
+redis==5.0.1
+
+# HTTP 客戶端
+httpx==0.25.2
+
+# 環境變數
+python-dotenv==1.0.0
+
+# 監控
+prometheus-client==0.19.0
+
+# 日誌
+python-json-logger==2.0.7
+
+# 測試
+pytest==7.4.3
+pytest-asyncio==0.21.1
+
+# 負載測試
+locust==2.18.0
