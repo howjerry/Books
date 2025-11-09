@@ -1,7 +1,7 @@
 """
 Prompt Caching 管理器
 
-利用 Anthropic 的 Prompt Caching 功能节省成本。
+利用 Anthropic 的 Prompt Caching 功能節省成本。
 """
 
 from typing import List, Dict, Optional
@@ -13,18 +13,18 @@ class PromptCache:
     Prompt Caching 管理器
 
     核心功能：
-    1. 缓存静态上下文
-    2. 自动计算缓存收益
-    3. 缓存策略优化
-    4. 缓存监控
+    1. 緩存靜態上下文
+    2. 自动計算緩存收益
+    3. 緩存策略優化
+    4. 緩存監控
     """
 
-    # 缓存定价折扣
-    CACHE_DISCOUNT = 0.9  # 缓存命中可节省 90% 成本
+    # 緩存定價折扣
+    CACHE_DISCOUNT = 0.9  # 緩存命中可節省 90% 成本
 
     def __init__(self, api_key: str):
         """
-        初始化缓存管理器
+        初始化緩存管理器
 
         Args:
             api_key: Anthropic API Key
@@ -45,18 +45,18 @@ class PromptCache:
         max_tokens: int = 4096
     ) -> Dict:
         """
-        创建带缓存的消息
+        創建带緩存的消息
 
         Args:
-            static_context: 静态上下文（会被缓存）
-            dynamic_query: 动态查询（不缓存）
+            static_context: 靜態上下文（會被緩存）
+            dynamic_query: 動態查詢（不緩存）
             model: 模型名称
             max_tokens: 最大输出 Token 数
 
         Returns:
-            响应结果和缓存统计
+            響應结果和緩存统计
         """
-        # 使用 cache_control 标记静态内容
+        # 使用 cache_control 标记靜態內容
         response = self.client.messages.create(
             model=model,
             max_tokens=max_tokens,
@@ -64,7 +64,7 @@ class PromptCache:
                 {
                     "type": "text",
                     "text": static_context,
-                    "cache_control": {"type": "ephemeral"}  # 启用缓存
+                    "cache_control": {"type": "ephemeral"}  # 啟用緩存
                 }
             ],
             messages=[
@@ -72,7 +72,7 @@ class PromptCache:
             ]
         )
 
-        # 提取缓存统计
+        # 提取緩存统计
         usage = response.usage
         cache_creation_tokens = getattr(usage, 'cache_creation_input_tokens', 0)
         cache_read_tokens = getattr(usage, 'cache_read_input_tokens', 0)
@@ -84,11 +84,11 @@ class PromptCache:
         else:
             self.cache_stats["cache_misses"] += 1
 
-        # 计算节省
+        # 計算節省
         if cache_read_tokens > 0:
-            # 假设 Sonnet 价格：输入 $3/M tokens
+            # 假設 Sonnet 价格：输入 $3/M tokens
             normal_cost = (cache_read_tokens / 1_000_000) * 3.0
-            cached_cost = (cache_read_tokens / 1_000_000) * 0.3  # 缓存读取价格
+            cached_cost = (cache_read_tokens / 1_000_000) * 0.3  # 緩存读取价格
             savings = normal_cost - cached_cost
             self.cache_stats["total_savings"] += savings
 
@@ -112,18 +112,18 @@ class PromptCache:
         model: str = "claude-sonnet-4-20250514"
     ) -> Dict:
         """
-        创建多轮对话（缓存系统提示和历史记录）
+        創建多轮對话（緩存系統提示和歷史記錄）
 
         Args:
-            system_prompt: 系统提示词（缓存）
-            conversation_history: 对话历史（缓存）
+            system_prompt: 系統提示词（緩存）
+            conversation_history: 對话歷史（緩存）
             new_message: 新消息
             model: 模型名称
 
         Returns:
-            响应结果
+            響應结果
         """
-        # 构建系统提示（缓存）
+        # 构建系統提示（緩存）
         system_messages = [
             {
                 "type": "text",
@@ -132,12 +132,12 @@ class PromptCache:
             }
         ]
 
-        # 构建消息历史
+        # 构建消息歷史
         messages = conversation_history.copy()
 
-        # 标记最后几条消息为可缓存（假设对话历史较长）
+        # 标记最后几条消息为可緩存（假設對话歷史较长）
         if len(messages) >= 3:
-            # 缓存倒数第 3 条消息
+            # 緩存倒数第 3 条消息
             messages[-3]["cache_control"] = {"type": "ephemeral"}
 
         # 添加新消息
@@ -166,20 +166,20 @@ class PromptCache:
         model: str = "claude-sonnet-4-20250514"
     ) -> Dict:
         """
-        分析缓存效率
+        分析緩存效率
 
         Args:
-            static_content_length: 静态内容长度（字符数）
-            expected_requests: 预期请求次数
+            static_content_length: 靜態內容長度（字符数）
+            expected_requests: 預期請求次数
             model: 模型名称
 
         Returns:
-            缓存效率分析
+            緩存效率分析
         """
         # 粗略估算 Token 数（1 token ≈ 4 字符）
         static_tokens = static_content_length // 4
 
-        # 模型定价（简化）
+        # 模型定價（简化）
         pricing = {
             "claude-haiku-3-20250307": {"input": 0.25, "cache_read": 0.03},
             "claude-sonnet-4-20250514": {"input": 3.00, "cache_read": 0.30},
@@ -188,23 +188,23 @@ class PromptCache:
 
         model_pricing = pricing.get(model, pricing["claude-sonnet-4-20250514"])
 
-        # 计算成本
-        # 无缓存成本
+        # 計算成本
+        # 无緩存成本
         no_cache_cost = (static_tokens / 1_000_000) * model_pricing["input"] * expected_requests
 
-        # 有缓存成本
-        # 第 1 次：写入缓存（稍贵）
+        # 有緩存成本
+        # 第 1 次：写入緩存（稍贵）
         first_request_cost = (static_tokens / 1_000_000) * (model_pricing["input"] * 1.25)
-        # 后续：读取缓存（便宜）
+        # 後續：读取緩存（便宜）
         subsequent_cost = (static_tokens / 1_000_000) * model_pricing["cache_read"] * (expected_requests - 1)
         with_cache_cost = first_request_cost + subsequent_cost
 
-        # 节省
+        # 節省
         total_savings = no_cache_cost - with_cache_cost
         savings_percentage = (total_savings / no_cache_cost) * 100
 
-        # 投资回收期（需要多少次请求才能收回成本）
-        breakeven_requests = 2  # 通常 2 次请求后就开始节省
+        # 投資回收期（需要多少次請求才能收回成本）
+        breakeven_requests = 2  # 通常 2 次請求后就開始節省
 
         return {
             "static_tokens": static_tokens,
@@ -214,15 +214,15 @@ class PromptCache:
             "total_savings": round(total_savings, 4),
             "savings_percentage": round(savings_percentage, 1),
             "breakeven_requests": breakeven_requests,
-            "recommendation": "启用缓存" if savings_percentage > 10 else "不建议缓存（请求次数过少）"
+            "recommendation": "啟用緩存" if savings_percentage > 10 else "不建議緩存（請求次数過少）"
         }
 
     def get_cache_stats(self) -> Dict:
         """
-        获取缓存统计信息
+        獲取緩存统计資訊
 
         Returns:
-            缓存统计
+            緩存统计
         """
         hit_rate = 0.0
         if self.cache_stats["total_requests"] > 0:
@@ -237,7 +237,7 @@ class PromptCache:
         }
 
     def reset_stats(self):
-        """重置统计信息"""
+        """重置统计資訊"""
         self.cache_stats = {
             "total_requests": 0,
             "cache_hits": 0,
@@ -255,9 +255,9 @@ def example_usage():
 
     cache = PromptCache(api_key=os.getenv("ANTHROPIC_API_KEY"))
 
-    # 场景：客服 Agent，FAQ 文档是静态的
+    # 場景：客服 Agent，FAQ 文檔是靜態的
     faq_document = """
-    # 常见问题解答
+    # 常见問題解答
 
     Q: 如何重置密码？
     A: 点击登录页面的"忘记密码"...
@@ -265,30 +265,30 @@ def example_usage():
     Q: 如何联系客服？
     A: 拨打 400-123-4567...
 
-    [包含 50+ 条 FAQ，约 10,000 tokens]
+    [包含 50+ 条 FAQ，約 10,000 tokens]
     """
 
-    # 第 1 次调用（缓存未命中）
+    # 第 1 次呼叫（緩存未命中）
     result1 = cache.create_cached_message(
         static_context=faq_document,
         dynamic_query="如何重置密码？"
     )
-    print(f"第 1 次调用 - 缓存命中: {result1['cache_hit']}")
+    print(f"第 1 次呼叫 - 緩存命中: {result1['cache_hit']}")
 
-    # 第 2 次调用（缓存命中！）
+    # 第 2 次呼叫（緩存命中！）
     result2 = cache.create_cached_message(
         static_context=faq_document,
         dynamic_query="客服电话是多少？"
     )
-    print(f"第 2 次调用 - 缓存命中: {result2['cache_hit']}")
-    print(f"节省成本: ${result2['estimated_savings']:.4f}")
+    print(f"第 2 次呼叫 - 緩存命中: {result2['cache_hit']}")
+    print(f"節省成本: ${result2['estimated_savings']:.4f}")
 
     # 查看统计
     stats = cache.get_cache_stats()
-    print(f"\n缓存统计:")
-    print(f"  总请求: {stats['total_requests']}")
+    print(f"\n緩存统计:")
+    print(f"  總請求: {stats['total_requests']}")
     print(f"  命中率: {stats['hit_rate_percentage']}%")
-    print(f"  总节省: ${stats['total_savings_usd']}")
+    print(f"  總節省: ${stats['total_savings_usd']}")
 
 
 if __name__ == "__main__":

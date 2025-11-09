@@ -1,7 +1,7 @@
 """
 智能模型路由器
 
-根据任务复杂度自动选择最合适的模型，平衡成本与质量。
+根据任务複雜度自动選擇最合适的模型，平衡成本与質量。
 """
 
 from typing import Dict, Optional
@@ -10,10 +10,10 @@ from anthropic import Anthropic
 
 
 class TaskComplexity(Enum):
-    """任务复杂度枚举"""
-    SIMPLE = "simple"          # 简单任务（FAQ、分类）
+    """任务複雜度枚举"""
+    SIMPLE = "simple"          # 簡單任务（FAQ、分类）
     MODERATE = "moderate"      # 中等任务（摘要、翻译）
-    COMPLEX = "complex"        # 复杂任务（代码生成、深度分析）
+    COMPLEX = "complex"        # 複雜任务（代码生成、深度分析）
 
 
 class ModelRouter:
@@ -21,10 +21,10 @@ class ModelRouter:
     智能模型路由器
 
     核心功能：
-    1. 分析任务复杂度
-    2. 选择最优模型
+    1. 分析任务複雜度
+    2. 選擇最优模型
     3. 成本预测
-    4. 性能监控
+    4. 性能監控
     """
 
     # 模型性能与成本配置
@@ -34,9 +34,9 @@ class ModelRouter:
             "cost_multiplier": 1.0,
             "suitable_for": [TaskComplexity.SIMPLE],
             "max_tokens": 200_000,
-            "strengths": ["速度快", "成本低", "简单任务"],
+            "strengths": ["速度快", "成本低", "簡單任务"],
             "pricing": {
-                "input": 0.25,   # 每百万 token
+                "input": 0.25,   # 每百萬 token
                 "output": 1.25
             }
         },
@@ -45,7 +45,7 @@ class ModelRouter:
             "cost_multiplier": 12.0,
             "suitable_for": [TaskComplexity.SIMPLE, TaskComplexity.MODERATE],
             "max_tokens": 200_000,
-            "strengths": ["平衡性能", "通用任务", "适合大部分场景"],
+            "strengths": ["平衡性能", "通用任务", "適合大部分場景"],
             "pricing": {
                 "input": 3.00,
                 "output": 15.00
@@ -56,7 +56,7 @@ class ModelRouter:
             "cost_multiplier": 60.0,
             "suitable_for": [TaskComplexity.MODERATE, TaskComplexity.COMPLEX],
             "max_tokens": 200_000,
-            "strengths": ["最高性能", "复杂推理", "关键任务"],
+            "strengths": ["最高性能", "複雜推理", "關鍵任务"],
             "pricing": {
                 "input": 15.00,
                 "output": 75.00
@@ -70,39 +70,39 @@ class ModelRouter:
 
         Args:
             api_key: Anthropic API Key
-            default_model: 默认模型
+            default_model: 默認模型
         """
         self.client = Anthropic(api_key=api_key)
         self.default_model = default_model
 
     def analyze_complexity(self, prompt: str) -> TaskComplexity:
         """
-        分析任务复杂度
+        分析任务複雜度
 
         Args:
-            prompt: 用户提示词
+            prompt: 用戶提示词
 
         Returns:
-            任务复杂度
+            任务複雜度
         """
-        # 复杂度判断关键词
+        # 複雜度判断關鍵词
         complex_keywords = [
             "代码", "code", "implement", "设计", "design", "架构", "architecture",
-            "优化", "optimize", "重构", "refactor", "分析", "analyze", "推理", "reasoning"
+            "優化", "optimize", "重构", "refactor", "分析", "analyze", "推理", "reasoning"
         ]
 
         moderate_keywords = [
-            "总结", "summarize", "翻译", "translate", "改写", "rewrite",
+            "總結", "summarize", "翻译", "translate", "改写", "rewrite",
             "解释", "explain", "比较", "compare"
         ]
 
         simple_keywords = [
-            "分类", "classify", "提取", "extract", "FAQ", "查询", "query"
+            "分类", "classify", "提取", "extract", "FAQ", "查詢", "query"
         ]
 
         prompt_lower = prompt.lower()
 
-        # 检查关键词
+        # 檢查關鍵词
         if any(kw in prompt_lower for kw in complex_keywords):
             return TaskComplexity.COMPLEX
         elif any(kw in prompt_lower for kw in moderate_keywords):
@@ -110,7 +110,7 @@ class ModelRouter:
         elif any(kw in prompt_lower for kw in simple_keywords):
             return TaskComplexity.SIMPLE
 
-        # 基于长度判断
+        # 基于長度判断
         if len(prompt) > 2000:
             return TaskComplexity.COMPLEX
         elif len(prompt) > 500:
@@ -124,11 +124,11 @@ class ModelRouter:
         budget_mode: bool = False
     ) -> str:
         """
-        选择最合适的模型
+        選擇最合适的模型
 
         Args:
-            complexity: 任务复杂度
-            budget_mode: 是否启用预算模式（优先考虑成本）
+            complexity: 任务複雜度
+            budget_mode: 是否啟用預算模式（优先考慮成本）
 
         Returns:
             模型名称
@@ -143,10 +143,10 @@ class ModelRouter:
             return self.default_model
 
         if budget_mode:
-            # 预算模式：选择最便宜的合适模型
+            # 預算模式：選擇最便宜的合适模型
             return min(suitable_models, key=lambda x: x[1]["cost_multiplier"])[0]
         else:
-            # 性能模式：选择性能最好的合适模型
+            # 性能模式：選擇性能最好的合适模型
             return max(suitable_models, key=lambda x: x[1]["capability"])[0]
 
     def estimate_cost(
@@ -164,7 +164,7 @@ class ModelRouter:
             estimated_output_tokens: 预估输出 Token 数
 
         Returns:
-            成本预估信息
+            成本预估資訊
         """
         profile = self.MODEL_PROFILES.get(model, self.MODEL_PROFILES[self.default_model])
         pricing = profile["pricing"]
@@ -190,21 +190,21 @@ class ModelRouter:
         override_model: Optional[str] = None
     ) -> Dict:
         """
-        路由并调用模型
+        路由并呼叫模型
 
         Args:
-            prompt: 用户提示词
+            prompt: 用戶提示词
             max_tokens: 最大输出 Token 数
-            budget_mode: 是否启用预算模式
-            override_model: 强制使用的模型（跳过路由）
+            budget_mode: 是否啟用預算模式
+            override_model: 强制使用的模型（跳過路由）
 
         Returns:
-            响应结果和成本信息
+            響應结果和成本資訊
         """
-        # 1. 分析复杂度
+        # 1. 分析複雜度
         complexity = self.analyze_complexity(prompt)
 
-        # 2. 选择模型
+        # 2. 選擇模型
         if override_model:
             model = override_model
         else:
@@ -214,14 +214,14 @@ class ModelRouter:
         estimated_input_tokens = len(prompt) // 4  # 粗略估算
         cost_estimate = self.estimate_cost(model, estimated_input_tokens, max_tokens // 2)
 
-        # 4. 调用 API
+        # 4. 呼叫 API
         response = self.client.messages.create(
             model=model,
             max_tokens=max_tokens,
             messages=[{"role": "user", "content": prompt}]
         )
 
-        # 5. 实际成本
+        # 5. 實際成本
         actual_cost = self.estimate_cost(
             model,
             response.usage.input_tokens,
@@ -242,10 +242,10 @@ class ModelRouter:
 
     def get_model_comparison(self) -> Dict:
         """
-        获取模型对比信息
+        獲取模型對比資訊
 
         Returns:
-            模型对比表
+            模型對比表
         """
         comparison = {}
 

@@ -1,7 +1,7 @@
 """
-成本追踪数据模型
+成本追蹤數據模型
 
-本模块定义了成本追踪系统的 SQLAlchemy 数据模型，支持多维度的成本分析。
+本模块定义了成本追蹤系統的 SQLAlchemy 數據模型，支持多維度的成本分析。
 """
 
 from sqlalchemy import Column, Integer, String, Float, DateTime, Index, ForeignKey
@@ -14,9 +14,9 @@ Base = declarative_base()
 
 class APIUsageLog(Base):
     """
-    API 使用日志表
+    API 使用日誌表
 
-    记录每次 API 调用的详细信息，支持成本分析和使用追踪。
+    記錄每次 API 呼叫的詳細資訊，支持成本分析和使用追蹤。
     """
     __tablename__ = "api_usage_logs"
 
@@ -24,12 +24,12 @@ class APIUsageLog(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     timestamp = Column(DateTime, default=datetime.utcnow, nullable=False, index=True)
 
-    # 归属信息（多维度成本归集）
+    # 歸屬資訊（多維度成本歸集）
     user_id = Column(String(100), nullable=False, index=True)
     team_id = Column(String(100), nullable=False, index=True)
     project_id = Column(String(100), nullable=False, index=True)
 
-    # 模型信息
+    # 模型資訊
     model = Column(String(50), nullable=False, index=True)
 
     # Token 使用量
@@ -40,10 +40,10 @@ class APIUsageLog(Base):
     # 成本（USD）
     input_cost = Column(Float, nullable=False)
     output_cost = Column(Float, nullable=False)
-    cache_savings = Column(Float, default=0.0)  # 缓存节省的成本
+    cache_savings = Column(Float, default=0.0)  # 緩存節省的成本
     total_cost = Column(Float, nullable=False, index=True)
 
-    # 任务信息
+    # 任务資訊
     task_type = Column(String(50), nullable=True)
     task_complexity = Column(String(20), nullable=True)  # simple, moderate, complex
 
@@ -63,34 +63,34 @@ class APIUsageLog(Base):
 
 class CostBudget(Base):
     """
-    成本预算表
+    成本預算表
 
-    定义团队/项目的月度预算限制，支持自动预警和限流。
+    定义團隊/專案的月度預算限制，支持自动預警和限流。
     """
     __tablename__ = "cost_budgets"
 
     # 主键
     id = Column(Integer, primary_key=True, autoincrement=True)
 
-    # 预算归属
+    # 預算歸屬
     entity_type = Column(String(20), nullable=False)  # team, project, user
     entity_id = Column(String(100), nullable=False)
 
-    # 预算限制（USD）
+    # 預算限制（USD）
     monthly_limit = Column(Float, nullable=False)
 
-    # 预警阈值
-    warning_threshold = Column(Float, default=0.8)  # 80% 时发出预警
-    critical_threshold = Column(Float, default=0.95)  # 95% 时限流
+    # 預警閾值
+    warning_threshold = Column(Float, default=0.8)  # 80% 時發出預警
+    critical_threshold = Column(Float, default=0.95)  # 95% 時限流
 
-    # 时间范围
+    # 時間範圍
     effective_from = Column(DateTime, nullable=False)
     effective_to = Column(DateTime, nullable=True)
 
-    # 状态
+    # 狀態
     is_active = Column(String(10), default="active")
 
-    # 创建时间
+    # 創建時間
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
@@ -105,23 +105,23 @@ class CostBudget(Base):
 
 class CostAlert(Base):
     """
-    成本告警记录表
+    成本告警記錄表
 
-    记录预算超限告警历史，支持告警分析和审计。
+    記錄預算超限告警歷史，支持告警分析和審計。
     """
     __tablename__ = "cost_alerts"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     timestamp = Column(DateTime, default=datetime.utcnow, nullable=False, index=True)
 
-    # 关联的预算
+    # 關聯的預算
     budget_id = Column(Integer, ForeignKey('cost_budgets.id'), nullable=False)
     budget = relationship("CostBudget")
 
-    # 告警级别
+    # 告警級別
     severity = Column(String(20), nullable=False)  # warning, critical
 
-    # 使用情况
+    # 使用情況
     current_usage = Column(Float, nullable=False)
     budget_limit = Column(Float, nullable=False)
     usage_percentage = Column(Float, nullable=False)
@@ -129,7 +129,7 @@ class CostAlert(Base):
     # 告警消息
     message = Column(String(500), nullable=False)
 
-    # 处理状态
+    # 處理狀態
     is_acknowledged = Column(String(10), default="no")
     acknowledged_by = Column(String(100), nullable=True)
     acknowledged_at = Column(DateTime, nullable=True)

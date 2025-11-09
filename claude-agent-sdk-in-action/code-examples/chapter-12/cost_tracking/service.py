@@ -1,7 +1,7 @@
 """
-成本追踪服务
+成本追蹤服務
 
-提供完整的成本追踪、分析和预算管理功能。
+提供完整的成本追蹤、分析和預算管理功能。
 """
 
 from datetime import datetime, timedelta
@@ -13,16 +13,16 @@ from .models import Base, APIUsageLog, CostBudget, CostAlert
 
 class CostTrackingService:
     """
-    成本追踪服务
+    成本追蹤服務
 
     核心功能：
-    1. 记录 API 使用日志
-    2. 多维度成本分析
-    3. 预算管理和告警
-    4. 成本优化建议
+    1. 記錄 API 使用日誌
+    2. 多維度成本分析
+    3. 預算管理和告警
+    4. 成本優化建議
     """
 
-    # Claude 模型定价（每百万 Token，USD）
+    # Claude 模型定價（每百萬 Token，USD）
     MODEL_PRICING = {
         "claude-haiku-3-20250307": {
             "input": 0.25,
@@ -46,10 +46,10 @@ class CostTrackingService:
 
     def __init__(self, database_url: str):
         """
-        初始化成本追踪服务
+        初始化成本追蹤服務
 
         Args:
-            database_url: 数据库连接字符串
+            database_url: 數據库連接字符串
         """
         self.engine = create_engine(database_url)
         Base.metadata.create_all(self.engine)
@@ -69,30 +69,30 @@ class CostTrackingService:
         response_time_ms: Optional[int] = None
     ) -> APIUsageLog:
         """
-        记录一次 API 调用
+        記錄一次 API 呼叫
 
         Args:
-            user_id: 用户 ID
-            team_id: 团队 ID
-            project_id: 项目 ID
+            user_id: 用戶 ID
+            team_id: 團隊 ID
+            project_id: 專案 ID
             model: 模型名称
             input_tokens: 输入 Token 数
             output_tokens: 输出 Token 数
-            cached_tokens: 缓存命中 Token 数
+            cached_tokens: 緩存命中 Token 数
             task_type: 任务类型
-            task_complexity: 任务复杂度
-            response_time_ms: 响应时间（毫秒）
+            task_complexity: 任务複雜度
+            response_time_ms: 響應時間（毫秒）
 
         Returns:
-            创建的日志记录
+            創建的日誌記錄
         """
         pricing = self.MODEL_PRICING.get(model, self.MODEL_PRICING["claude-sonnet-4-20250514"])
 
-        # 计算成本
+        # 計算成本
         input_cost = (input_tokens / 1_000_000) * pricing["input"]
         output_cost = (output_tokens / 1_000_000) * pricing["output"]
 
-        # 缓存节省：正常价格 - 缓存价格
+        # 緩存節省：正常价格 - 緩存价格
         if cached_tokens > 0:
             normal_cache_cost = (cached_tokens / 1_000_000) * pricing["input"]
             actual_cache_cost = (cached_tokens / 1_000_000) * pricing["cache_read"]
@@ -102,7 +102,7 @@ class CostTrackingService:
 
         total_cost = input_cost + output_cost - cache_savings
 
-        # 创建日志
+        # 創建日誌
         log = APIUsageLog(
             timestamp=datetime.utcnow(),
             user_id=user_id,
@@ -126,7 +126,7 @@ class CostTrackingService:
             session.commit()
             session.refresh(log)
 
-        # 检查预算
+        # 檢查預算
         self._check_budget(team_id, project_id, session)
 
         return log
@@ -138,15 +138,15 @@ class CostTrackingService:
         group_by: str = "team"
     ) -> List[Dict]:
         """
-        获取成本汇总报告
+        獲取成本匯總報告
 
         Args:
-            start_date: 开始日期
-            end_date: 结束日期
-            group_by: 分组维度（team, project, user, model）
+            start_date: 開始日期
+            end_date: 結束日期
+            group_by: 分組維度（team, project, user, model）
 
         Returns:
-            成本汇总列表
+            成本匯總列表
         """
         with self.Session() as session:
             group_column = getattr(APIUsageLog, f"{group_by}_id" if group_by != "model" else "model")
@@ -187,17 +187,17 @@ class CostTrackingService:
         critical_threshold: float = 0.95
     ) -> CostBudget:
         """
-        创建预算限制
+        創建預算限制
 
         Args:
             entity_type: 实体类型（team, project, user）
             entity_id: 实体 ID
-            monthly_limit: 月度预算限制（USD）
-            warning_threshold: 预警阈值（默认 80%）
-            critical_threshold: 严重阈值（默认 95%）
+            monthly_limit: 月度預算限制（USD）
+            warning_threshold: 預警閾值（默認 80%）
+            critical_threshold: 嚴重閾值（默認 95%）
 
         Returns:
-            创建的预算记录
+            創建的預算記錄
         """
         budget = CostBudget(
             entity_type=entity_type,
@@ -218,18 +218,18 @@ class CostTrackingService:
 
     def _check_budget(self, team_id: str, project_id: str, session: Session):
         """
-        检查预算使用情况，必要时发出告警
+        檢查預算使用情況，必要時發出告警
 
         Args:
-            team_id: 团队 ID
-            project_id: 项目 ID
-            session: 数据库会话
+            team_id: 團隊 ID
+            project_id: 專案 ID
+            session: 數據库會話
         """
-        # 获取本月起始时间
+        # 獲取本月起始時間
         now = datetime.utcnow()
         month_start = datetime(now.year, now.month, 1)
 
-        # 检查团队预算
+        # 檢查團隊預算
         team_budget = session.query(CostBudget).filter(
             CostBudget.entity_type == "team",
             CostBudget.entity_id == team_id,
@@ -244,7 +244,7 @@ class CostTrackingService:
 
             usage_pct = current_usage / team_budget.monthly_limit
 
-            # 触发告警
+            # 觸發告警
             if usage_pct >= team_budget.critical_threshold:
                 self._create_alert(session, team_budget, current_usage, "critical")
             elif usage_pct >= team_budget.warning_threshold:
@@ -258,17 +258,17 @@ class CostTrackingService:
         severity: str
     ):
         """
-        创建成本告警
+        創建成本告警
 
         Args:
-            session: 数据库会话
-            budget: 预算记录
-            current_usage: 当前使用量
-            severity: 严重级别
+            session: 數據库會話
+            budget: 預算記錄
+            current_usage: 當前使用量
+            severity: 嚴重級別
         """
         usage_pct = (current_usage / budget.monthly_limit) * 100
 
-        # 检查是否已有未确认的告警
+        # 檢查是否已有未確認的告警
         existing = session.query(CostAlert).filter(
             CostAlert.budget_id == budget.id,
             CostAlert.severity == severity,
@@ -296,20 +296,20 @@ class CostTrackingService:
         days: int = 30
     ) -> List[Dict]:
         """
-        获取成本优化建议
+        獲取成本優化建議
 
         Args:
-            team_id: 团队 ID
+            team_id: 團隊 ID
             days: 分析天数
 
         Returns:
-            优化建议列表
+            優化建議列表
         """
         start_date = datetime.utcnow() - timedelta(days=days)
         suggestions = []
 
         with self.Session() as session:
-            # 1. 检查模型使用分布
+            # 1. 檢查模型使用分布
             model_usage = session.query(
                 APIUsageLog.model,
                 APIUsageLog.task_complexity,
@@ -320,17 +320,17 @@ class CostTrackingService:
                 APIUsageLog.timestamp >= start_date
             ).group_by(APIUsageLog.model, APIUsageLog.task_complexity).all()
 
-            # 检查是否在简单任务上使用了昂贵模型
+            # 檢查是否在簡單任务上使用了昂贵模型
             for usage in model_usage:
                 if usage.task_complexity == "simple" and "opus" in usage.model.lower():
                     suggestions.append({
                         "type": "model_downgrade",
                         "priority": "high",
-                        "message": f"检测到 {usage.count} 个简单任务使用 Opus 模型，建议降级为 Haiku",
-                        "estimated_savings": usage.cost * 0.98  # 约 98% 成本节省
+                        "message": f"檢測到 {usage.count} 個簡單任务使用 Opus 模型，建議降级为 Haiku",
+                        "estimated_savings": usage.cost * 0.98  # 約 98% 成本節省
                     })
 
-            # 2. 检查缓存使用率
+            # 2. 檢查緩存使用率
             cache_stats = session.query(
                 func.sum(APIUsageLog.cached_tokens).label('cached'),
                 func.sum(APIUsageLog.input_tokens).label('total'),
@@ -344,11 +344,11 @@ class CostTrackingService:
                 suggestions.append({
                     "type": "enable_caching",
                     "priority": "high",
-                    "message": "未检测到 Prompt Caching 使用，建议启用以节省高达 90% 的重复内容成本",
-                    "estimated_savings": cache_stats.total * 0.5 * 0.9  # 假设 50% 内容可缓存
+                    "message": "未檢測到 Prompt Caching 使用，建議啟用以節省高达 90% 的重複內容成本",
+                    "estimated_savings": cache_stats.total * 0.5 * 0.9  # 假設 50% 內容可緩存
                 })
 
-            # 3. 检查高频调用
+            # 3. 檢查高頻呼叫
             high_freq_users = session.query(
                 APIUsageLog.user_id,
                 func.count(APIUsageLog.id).label('count')
@@ -363,7 +363,7 @@ class CostTrackingService:
                 suggestions.append({
                     "type": "batch_processing",
                     "priority": "medium",
-                    "message": f"检测到 {len(high_freq_users)} 个用户高频调用，建议使用批量处理",
+                    "message": f"檢測到 {len(high_freq_users)} 個用戶高頻呼叫，建議使用批量處理",
                     "estimated_savings": None
                 })
 
