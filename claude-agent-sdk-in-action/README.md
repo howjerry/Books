@@ -43,7 +43,7 @@
 
 ### 第四部：治理篇 - 團隊協作、成本優化與持續改進
 - **第 10 章：建立可重用的 Agent 市集 - 組織知識庫系統** ✅ **已完成**
-- 第 11 章：團隊協作與開發工作流程 - Agent 開發生命週期管理
+- **第 11 章：團隊協作與開發工作流程 - Agent 開發生命週期管理** ✅ **已完成**
 - 第 12 章：成本優化與資源管理 - 打造高效益的 Agent 系統
 - 第 13 章：Agent 開發的未來與持續學習路徑
 
@@ -66,7 +66,8 @@ claude-agent-sdk-in-action/
 │       ├── chapter-07.md      # ✅ 已完成 (58KB)
 │       ├── chapter-08.md      # ✅ 已完成 (45KB)
 │       ├── chapter-09.md      # ✅ 已完成 (60KB)
-│       └── chapter-10.md      # ✅ 已完成 (44KB)
+│       ├── chapter-10.md      # ✅ 已完成 (44KB)
+│       └── chapter-11.md      # ✅ 已完成 (45KB)
 ├── code-examples/             # 完整可運行的程式碼範例
 │   ├── chapter-01/            # 客服 Agent 範例
 │   ├── chapter-02/            # 報表生成 Agent 範例
@@ -76,7 +77,8 @@ claude-agent-sdk-in-action/
 │   ├── chapter-07/            # 企業級客戶支援平台
 │   ├── chapter-08/            # 安全監控系統範例
 │   ├── chapter-09/            # Meta Agent 重寫系統
-│   └── chapter-10/            # Agent 市集系統
+│   ├── chapter-10/            # Agent 市集系統
+│   └── chapter-11/            # DevOps 與 CI/CD 系統
 ├── diagrams/                  # 技術圖表與架構圖
 ├── resources/                 # 補充資源
 └── planning/                  # 寫作計畫與進度追蹤
@@ -209,15 +211,26 @@ claude-agent-sdk-in-action/
   - 實際效益數據（ROI 1,250%）
   - 44KB 完整內容 + ~250 行配置
 
+- [x] **第 11 章：團隊協作與開發工作流程 - Agent 開發生命週期管理** (2025-11-09)
+  - Git Flow 分支策略（main/develop/feature/release/hotfix）
+  - Conventional Commits 規範
+  - 完整 CI/CD 管線（GitHub Actions 7-job workflow）
+  - Pull Request 審查最佳實踐
+  - 多環境管理（Dev/Staging/Production）
+  - 自動化 Hotfix 流程
+  - Blue-Green 部署策略
+  - 實際效益數據（ROI 1,267%、生產事故 -90%）
+  - 45KB 完整內容 + CI/CD 配置
+
 ### 待完成章節
-- [ ] 第 11-13 章（治理篇）
+- [ ] 第 12-13 章（治理篇）
 
 ### 總計進度
-- **已完成**: 10 章 (基礎篇 3 章 + 進階篇 3 章 + 實戰篇 3 章 + 治理篇 1 章)
-- **內容產出**: 599KB 高品質技術內容
-- **程式碼**: ~15,350 行可運行程式碼
-- **專案範例**: 10 個完整的 Agent 系統
-- **完成度**: 77% (10/13 章)
+- **已完成**: 11 章 (基礎篇 3 章 + 進階篇 3 章 + 實戰篇 3 章 + 治理篇 2 章)
+- **內容產出**: 644KB 高品質技術內容
+- **程式碼**: ~15,600 行可運行程式碼
+- **專案範例**: 11 個完整的 Agent 系統
+- **完成度**: 85% (11/13 章)
 
 ---
 
