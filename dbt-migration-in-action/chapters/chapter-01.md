@@ -475,9 +475,9 @@ AI（如 Claude、ChatGPT）非常聰明，但它們：
 
 新人的表現會大幅改善。更重要的是，當他犯錯時，你可以更新 SOP，下次他就不會重複同樣的錯誤。
 
-**這就是「Migration Playbook」的概念誕生的時刻**。
+**這就是「遷移手冊（Migration Playbook）」的概念誕生的時刻**。
 
-### Migration Playbook：給 AI 的「教科書」
+### 遷移手冊：給 AI 的「教科書」
 
 坂元意識到，他需要的不是更聰明的 AI，而是**更好的知識傳遞方式**。
 
@@ -517,11 +517,11 @@ Claude Code 生成了第一版手冊，結構如下：
 
 ```mermaid
 graph TD
-    A[選擇下一個 SQL 檔案] --> B[請求 Claude Code 執行遷移<br/>參考 Migration Playbook]
+    A[選擇下一個 SQL 檔案] --> B[請求 Claude Code 執行遷移<br/>參考遷移手冊]
     B --> C{檢查結果}
     C -->|完美| D[標記完成，移到下一個]
     C -->|有小錯誤| E[分析錯誤根因]
-    E --> F[更新 Playbook]
+    E --> F[更新遷移手冊]
     F --> G[請求 Claude Code 重新執行]
     G --> C
     D --> H{還有檔案？}
@@ -572,7 +572,7 @@ graph TD
 
 **知識累積**：
 
-Migration Playbook 從初版的 6 個章節，成長到最終版的 13 個章節：
+遷移手冊從初版的 6 個章節，成長到最終版的 13 個章節：
 
 ```markdown
 # dbt 模型遷移手冊 v3.0（最終版）

@@ -87,7 +87,7 @@
 
 ✅ **結構化手冊**（一次建立，重複使用）：
 ```
-請參考 Migration Playbook v1.0 將 xxx.sql 轉換為 dbt 模型
+請參考遷移手冊 v1.0 將 xxx.sql 轉換為 dbt 模型
 ```
 
 **原則 2：從實際錯誤中提煉**
@@ -192,7 +192,7 @@ graph LR
 
 這個結構遵循了實際的工作流程：分析原始檔案 → 建立 sources → 建立模型 → 建立 schema → 最終檢查。
 
-### 4.2.3 完整的 Migration Playbook v1.0
+### 4.2.3 完整的遷移手冊 v1.0
 
 讓我們逐章撰寫這份手冊。以下是完整內容：
 
@@ -515,7 +515,7 @@ models:
 ```markdown
 請參考以下手冊，將 yyy.sql 遷移到 dbt 模型：
 
-[貼上完整的 Migration Playbook v1.0 內容]
+[貼上完整的遷移手冊 v1.0 內容]
 
 原始檔案：/path/to/yyy.sql
 請產出：
@@ -565,9 +565,9 @@ GROUP BY u.user_id, u.username, activity_date
 我們向 Claude Code 發送以下提示：
 
 ```markdown
-請參考 Migration Playbook v1.0 將 user_activity_daily.sql 遷移到 dbt 模型。
+請參考遷移手冊 v1.0 將 user_activity_daily.sql 遷移到 dbt 模型。
 
-[貼上完整的 Migration Playbook v1.0]
+[貼上完整的遷移手冊 v1.0]
 
 原始檔案內容：
 [貼上上述 SQL]
@@ -677,7 +677,7 @@ models:
 | Schema 完整性 | ⚠️ 描述簡略 | ✅ 描述完整 | ✅ |
 | NOT NULL 約束 | ❌ 遺失 | ✅ 正確遷移 | ✅ |
 
-💡 **關鍵發現**：使用 Migration Playbook 後，之前遇到的主要問題都解決了！
+💡 **關鍵發現**：使用遷移手冊後，之前遇到的主要問題都解決了！
 
 ### 4.3.5 仍然存在的小問題
 
@@ -723,11 +723,11 @@ models:
 
 效率提升了 **5-6 倍**！而且大部分時間都是 Claude Code 自動完成的，我們只需要做最後的檢查和微調。
 
-🎯 **里程碑達成**：我們證明了 Migration Playbook 的概念是有效的！
+🎯 **里程碑達成**：我們證明了遷移手冊的概念是有效的！
 
 ## 4.4 迭代改進機制
 
-Migration Playbook 不是一次性產物，而是持續演進的知識資產。讓我們建立一套迭代改進的機制。
+遷移手冊不是一次性產物，而是持續演進的知識資產。讓我們建立一套迭代改進的機制。
 
 ### 4.4.1 錯誤收集與分類
 
@@ -801,7 +801,7 @@ graph TD
 每次更新都應該記錄：
 
 ```markdown
-# Migration Playbook 變更歷史
+# 遷移手冊變更歷史
 
 ## v1.1 (2023-XX-XX)
 **變更類型**：次要更新
@@ -826,7 +826,7 @@ graph TD
 
 ### 4.4.5 團隊協作中的手冊管理
 
-如果是團隊使用 Migration Playbook，建議：
+如果是團隊使用遷移手冊，建議：
 
 **Git 版本控制**：
 ```bash
@@ -851,7 +851,7 @@ migration-playbook/
 
 在每次遷移時，明確指定版本：
 ```markdown
-請參考 Migration Playbook v1.1 進行遷移...
+請參考遷移手冊 v1.1 進行遷移...
 ```
 
 這確保所有人都使用統一的標準。
@@ -897,7 +897,7 @@ WHERE DATE(i.snapshot_timestamp) = CURRENT_DATE() - 1
 
 ### 4.5.2 練習步驟
 
-參考 Migration Playbook v1.0，完成以下任務：
+參考遷移手冊 v1.0，完成以下任務：
 
 1. **分析原始檔案**（對應手冊第 1 節）
    - [ ] 識別表格名稱
@@ -991,7 +991,7 @@ models:
 📝 **自我檢查**：
 - 你的答案與參考答案有多相似？
 - 是否遇到了任何困難？
-- Migration Playbook 是否提供了足夠的指引?
+- 遷移手冊是否提供了足夠的指引?
 
 ## 本章總結
 

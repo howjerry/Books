@@ -10,7 +10,7 @@
 
 ### 10.1.1 AI 的「疏忽」現象
 
-即使有詳細的 Migration Playbook，Claude Code 有時還是會「疏忽」某些規則。
+即使有詳細的遷移手冊，Claude Code 有時還是會「疏忽」某些規則。
 
 **典型的疏忽情況**：
 
@@ -509,7 +509,7 @@ graph TD
 **提示詞範本**：
 
 ```markdown
-請參考 Migration Playbook v3.0 將 daily_sales.sql 遷移到 dbt 模型。
+請參考遷移手冊 v3.0 將 daily_sales.sql 遷移到 dbt 模型。
 
 【重要】請嚴格遵守以下流程：
 1. 閱讀原始 SQL
