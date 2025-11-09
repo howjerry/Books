@@ -1,0 +1,39 @@
+# 第 10 章：Agent 市集系統依賴
+
+# Web 框架
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+
+# 資料庫
+sqlalchemy==2.0.23
+alembic==1.13.0
+psycopg2-binary==2.9.9
+asyncpg==0.29.0
+
+# 資料驗證
+pydantic==2.5.0
+pydantic-settings==2.1.0
+
+# CLI 工具
+click==8.1.7
+rich==13.7.0
+
+# 檔案存儲
+boto3==1.34.7  # S3/MinIO
+minio==7.2.0
+
+# 搜尋引擎
+elasticsearch==8.11.0
+
+# 快取
+redis==5.0.1
+
+# 工具
+python-dotenv==1.0.0
+pyyaml==6.0.1
+requests==2.31.0
+
+# 測試
+pytest==7.4.3
+pytest-asyncio==0.21.1
+httpx==0.25.2
