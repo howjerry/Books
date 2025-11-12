@@ -1,0 +1,84 @@
+{
+  "version": "1.0",
+  "skills": {
+    "backend-dev-guidelines": {
+      "type": "domain",
+      "enforcement": "suggest",
+      "priority": "high",
+      "pathPatterns": [
+        "src/api/**/*.ts",
+        "src/controllers/**/*.ts",
+        "src/services/**/*.ts",
+        "backend/**/*.ts",
+        "**/*.controller.ts",
+        "**/*.service.ts",
+        "**/routes/**/*.ts"
+      ],
+      "promptTriggers": {
+        "keywords": [
+          "controller",
+          "service",
+          "route",
+          "API",
+          "backend",
+          "endpoint",
+          "REST",
+          "GraphQL"
+        ],
+        "intents": [
+          "create.*controller",
+          "implement.*service",
+          "add.*route",
+          "build.*API",
+          "design.*endpoint"
+        ]
+      },
+      "exclusions": {
+        "paths": [
+          "**/*.test.ts",
+          "**/*.spec.ts",
+          "**/__tests__/**",
+          "**/__mocks__/**"
+        ]
+      }
+    },
+    "frontend-dev-guidelines": {
+      "type": "domain",
+      "enforcement": "suggest",
+      "priority": "high",
+      "pathPatterns": [
+        "src/components/**/*.tsx",
+        "src/components/**/*.jsx",
+        "src/pages/**/*.tsx",
+        "src/pages/**/*.jsx",
+        "frontend/**/*.tsx",
+        "frontend/**/*.jsx"
+      ],
+      "promptTriggers": {
+        "keywords": [
+          "component",
+          "React",
+          "UI",
+          "frontend",
+          "MUI",
+          "Material-UI",
+          "useState",
+          "useEffect"
+        ],
+        "intents": [
+          "create.*component",
+          "build.*UI",
+          "implement.*page"
+        ]
+      },
+      "exclusions": {
+        "paths": [
+          "**/*.test.tsx",
+          "**/*.spec.tsx",
+          "**/*.test.jsx",
+          "**/*.spec.jsx"
+        ]
+      }
+    }
+  }
+}

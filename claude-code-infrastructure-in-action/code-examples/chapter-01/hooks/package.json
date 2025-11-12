@@ -1,0 +1,23 @@
+{
+  "name": "claude-code-hooks",
+  "version": "1.0.0",
+  "description": "Claude Code Infrastructure - Chapter 1 Hooks",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "claude-code",
+    "hooks",
+    "ai-development"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "minimatch": "^9.0.3",
+    "typescript": "^5.3.3",
+    "ts-node": "^10.9.2",
+    "@types/node": "^20.10.6",
+    "@types/minimatch": "^5.1.2"
+  }
+}
