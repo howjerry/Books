@@ -1,11 +1,75 @@
-# Claude 工作記憶 - Books 專案
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+---
+
+# Books 專案 - 多書籍寫作倉庫
+
+## 倉庫概覽
+
+這是一個**多書籍寫作專案集合**，包含技術書籍和文學作品：
+
+### 專案類型
+- **技術書籍** (3本)：Manning "in Action" 風格的實戰教程
+- **歷史小說** (1本)：二月河風格的客家商人傳奇
+
+### 倉庫結構
+```
+Books/
+├── claude-agent-sdk-in-action/          # AI Agent 開發實戰
+├── claude-code-infrastructure-in-action/ # AI 開發環境實戰
+├── claude-skills-book/                  # Claude 技能書
+├── dbt-migration-in-action/             # DBT 遷移書
+└── hakka-merchant-novel/                # 客家商人歷史小說 ⭐ 當前活躍
+```
+
+### Git 工作流
+
+**分支命名規則**：
+- 所有開發分支必須以 `claude/` 開頭，以 session ID 結尾
+- 格式：`claude/{project-name}-{sessionId}`
+- 當前分支：`claude/hakka-merchant-novel-017CA3jzZ3LXZGodxScPt5xJ`
+
+**提交流程**：
+```bash
+# 1. 查看狀態
+git status
+
+# 2. 添加文件
+git add <files>
+
+# 3. 提交（使用 HEREDOC 格式化提交信息）
+git commit -m "$(cat <<'EOF'
+標題：簡潔描述
+
+## 詳細內容
+- 完成的工作
+- 重要變更
+EOF
+)"
+
+# 4. 推送到遠程（必須使用 -u 標記）
+git push -u origin <branch-name>
+```
+
+**重試策略**：
+- 網絡失敗時，使用指數退避重試（2s, 4s, 8s, 16s）
+- 最多重試 4 次
+
+---
 
 ## 當前工作情境
 
-**專案**: 《Claude Agent SDK 打造企業 Agent》書籍撰寫
-**開始日期**: 2025-11-08
-**角色**: Manning Publications 首席技術作家
-**目標**: 完成一本 Manning "in Action" 風格的企業級 AI Agent 開發實戰書籍
+**活躍專案**: 《客商風云：一個客家商人的百年傳奇》（hakka-merchant-novel）
+**開始日期**: 2025-11-17
+**角色**: 二月河風格歷史小說作家
+**目標**: 完成 80-120 萬字史詩小說
+
+**進度狀態**：
+- ✅ 序章《暮年回首》（7,800字）
+- ✅ 人物關係網絡（家族、商界、歷史人物）
+- ⏳ 第一章《客家山乡》（60,000字目標）
 
 ---
 
@@ -711,5 +775,50 @@ graph TB
 
 ---
 
-**最後更新**: 2025-11-10 12:45
-**下次更新預計**: 完成第 2 章後
+## 寫作流程快速參考
+
+### 歷史小說寫作檢查清單
+
+**開始新章節前**：
+1. [ ] 查閱 `outline.md` 確認章節規劃
+2. [ ] 查閱 `characters/` 確認人物設定
+3. [ ] 查閱 `timeline/historical-timeline.md` 確認歷史事件
+4. [ ] 使用 TodoWrite 創建章節任務清單
+
+**寫作過程中**：
+1. [ ] 保持第一人稱敘事（93歲叶鸿基自述）
+2. [ ] 文白相間的語言風格
+3. [ ] 歷史事件嚴格遵守時間線
+4. [ ] 真實歷史人物出場遵循 `characters/historical.md` 原則
+5. [ ] 定期更新 TodoWrite 任務狀態
+
+**完成章節後**：
+1. [ ] 檢查字數是否達標
+2. [ ] 檢查歷史真實性（人物年齡、事件時間）
+3. [ ] Git 提交並 push
+4. [ ] 更新 CLAUDE.md 工作記錄
+5. [ ] 標記 TodoWrite 任務為完成
+
+### 技術書籍寫作檢查清單（Manning風格）
+
+**開始新章節前**：
+1. [ ] 確認章節的學習目標
+2. [ ] 準備完整可運行的程式碼範例
+3. [ ] 規劃 Mermaid 架構圖
+
+**寫作過程中**：
+1. [ ] 專案/案例驅動的開頭
+2. [ ] 從基礎到進階的漸進式教學
+3. [ ] 完整可運行的程式碼（非片段）
+4. [ ] 使用 ‹1›, ‹2› 標記關鍵部分
+5. [ ] 親切的第二人稱語氣
+
+**完成章節後**：
+1. [ ] code-examples/ 目錄包含完整程式碼
+2. [ ] 添加故障排除指南
+3. [ ] 章節總結與下一章預告
+
+---
+
+**最後更新**: 2025-11-17 12:30
+**當前任務**: 開始撰寫第一章《客家山鄉》
