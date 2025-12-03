@@ -31,7 +31,6 @@ Books/
 **分支命名規則**：
 - 所有開發分支必須以 `claude/` 開頭，以 session ID 結尾
 - 格式：`claude/{project-name}-{sessionId}`
-- 當前分支：`claude/hakka-merchant-novel-017CA3jzZ3LXZGodxScPt5xJ`
 
 **提交流程**：
 ```bash
@@ -896,4 +895,5 @@ graph TB
 ---
 
 **最後更新**: 2025-12-03
-**當前任務**: 開始撰寫《口袋心理師》第一部分
+**當前任務**: 撰寫《口袋心理師》第三部分：關係中的我（40篇）
+**已完成**: 80/200 篇（40%）
