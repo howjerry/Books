@@ -75,7 +75,8 @@ git push -u origin <branch-name>
 - ✅ 理論基礎 psychological-resilience-framework.md
 - ✅ 轉化指南 theory-to-chapter-mapping.md
 - ✅ 第一部分：認識你的情緒（40 篇）
-- ⏳ 第二部分：與自己對話（40 篇）
+- ✅ 第二部分：與自己對話（40 篇）
+- ⏳ 第三部分：關係中的我（40 篇）
 
 ---
 
