@@ -439,12 +439,9 @@ def calculate_price(order, strategy: DiscountStrategy):
 | Observer | 一對多通知 | 發布訂閱 |
 | Repository | 資料存取 | 隔離資料來源 |
 
-### Part 2 總結預告
+### 下一章預告
 
-Part 2（建模）完成！下一步是 Part 2 總結，包括：
-- 需求三層模板
-- 架構決策記錄 ADR 模板
-- 設計品質檢查清單
+Part 2（建模）完成！接下來進入 Part 3（品質與安全），我們將學習「品質的概念」——如何定義、度量和確保軟體品質。
 
 ---
 
@@ -458,4 +455,4 @@ Part 2（建模）完成！下一步是 Part 2 總結，包括：
 
 ---
 
-*Part 2 完成！*
+*Part 2 完成！下一章：第15章　品質的概念*
