@@ -1,0 +1,34 @@
+# 深度研究代理人實戰 - 第 2 章：交互式縮放的奧秘
+# Python 3.9+ 需求
+
+# OpenAI API 客戶端（用於 GPT 模型實驗）
+openai>=1.12.0
+
+# 環境變數管理
+python-dotenv>=1.0.0
+
+# HTTP 請求（用於搜尋 API）
+requests>=2.31.0
+
+# 資料處理與分析
+pandas>=2.0.0
+numpy>=1.24.0
+
+# 圖表視覺化（可選，用於結果分析）
+matplotlib>=3.7.0
+
+# 進度條顯示
+tqdm>=4.65.0
+
+# 資料類別支援（Python 3.9 內建，但這裡為了相容性）
+dataclasses-json>=0.6.0
+
+# JSON 處理
+orjson>=3.9.0
+
+# 非同步支援
+aiohttp>=3.9.0
+asyncio-throttle>=1.0.2
+
+# 日誌格式化
+rich>=13.0.0

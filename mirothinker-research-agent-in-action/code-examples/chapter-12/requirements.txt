@@ -1,0 +1,46 @@
+# 深度研究代理人 - 第 12 章：基準測試全解析
+# ================================================
+# 依賴套件清單
+
+# 核心依賴
+asyncio-throttle>=1.0.2
+aiohttp>=3.9.0
+httpx>=0.25.0
+
+# 資料處理
+pydantic>=2.5.0
+dataclasses-json>=0.6.0
+
+# JSON 處理
+orjson>=3.9.0
+
+# 日期時間
+python-dateutil>=2.8.0
+
+# 環境變數
+python-dotenv>=1.0.0
+
+# 日誌
+structlog>=23.2.0
+
+# 報告生成
+jinja2>=3.1.0
+markdown>=3.5.0
+
+# 視覺化（選用）
+matplotlib>=3.8.0
+seaborn>=0.13.0
+
+# 統計
+numpy>=1.26.0
+scipy>=1.11.0
+
+# 測試
+pytest>=7.4.0
+pytest-asyncio>=0.21.0
+pytest-cov>=4.1.0
+
+# 程式碼品質
+black>=23.11.0
+isort>=5.12.0
+mypy>=1.7.0

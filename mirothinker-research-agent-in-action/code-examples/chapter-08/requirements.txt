@@ -1,0 +1,23 @@
+# 第 8 章：環境搭建與部署 - 依賴套件
+# ============================================
+
+# 核心依賴
+aiohttp>=3.9.0          # 異步 HTTP 客戶端
+python-dotenv>=1.0.0    # 環境變數管理
+
+# vLLM 推理引擎（需要 CUDA 環境）
+# vllm>=0.3.0           # 取消註解以安裝
+
+# 量化工具（可選）
+# autoawq>=0.1.8        # AWQ 量化
+# transformers>=4.35.0  # Hugging Face Transformers
+
+# Prometheus 監控
+# prometheus-client>=0.19.0  # Prometheus Python 客戶端
+
+# GPU 監控（可選）
+# pynvml>=11.5.0        # NVIDIA GPU 監控
+
+# 開發與測試
+pytest>=7.4.0           # 測試框架
+pytest-asyncio>=0.21.0  # 異步測試支援

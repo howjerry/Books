@@ -216,17 +216,93 @@ mirothinker-research-agent-in-action/
 | 章節 | 狀態 | 字數 | 最後更新 |
 |------|------|------|----------|
 | 專案結構 | ✅ 完成 | - | 2026-01-07 |
-| 第 1 章 | ⏳ 待撰寫 | - | - |
-| 第 2 章 | ⏳ 待撰寫 | - | - |
-| ... | ... | ... | ... |
+| 序章 | ✅ 完成 | ~5,000 | 2026-01-08 |
+| 第 1 章 | ✅ 完成 | ~12,000 | 2026-01-08 |
+| 第 2 章 | ✅ 完成 | ~10,000 | 2026-01-08 |
+| 第 3 章 | ✅ 完成 | ~10,000 | 2026-01-08 |
+| 第 4 章 | ✅ 完成 | ~15,000 | 2026-01-08 |
+| 第 5 章 | ✅ 完成 | ~15,000 | 2026-01-08 |
+| 第 6 章 | ✅ 完成 | ~12,000 | 2026-01-08 |
+| 第 7 章 | ✅ 完成 | ~10,000 | 2026-01-08 |
+| 第 8 章 | ✅ 完成 | ~12,000 | 2026-01-08 |
+| 第 9 章 | ✅ 完成 | ~15,000 | 2026-01-08 |
+| 第 10 章 | ✅ 完成 | ~15,000 | 2026-01-08 |
+| 第 11 章 | ✅ 完成 | ~12,000 | 2026-01-08 |
+| 第 12 章 | ✅ 完成 | ~12,000 | 2026-01-08 |
+| 第 13 章 | ✅ 完成 | ~12,000 | 2026-01-08 |
+| 第 14 章 | ✅ 完成 | ~12,000 | 2026-01-08 |
+
+### 程式碼範例
+
+| 章節 | 檔案 | 狀態 |
+|------|------|------|
+| 第 1 章 | `simple_react_agent.py` | ✅ 完成（~300 行）|
+| 第 1 章 | `requirements.txt` | ✅ 完成 |
+| 第 1 章 | `.env.example` | ✅ 完成 |
+| 第 2 章 | `scaling_experiment.py` | ✅ 完成（~400 行）|
+| 第 2 章 | `requirements.txt` | ✅ 完成 |
+| 第 2 章 | `.env.example` | ✅ 完成 |
+| 第 3 章 | `cognitive_research_agent.py` | ✅ 完成（~450 行）|
+| 第 3 章 | `requirements.txt` | ✅ 完成 |
+| 第 3 章 | `.env.example` | ✅ 完成 |
+| 第 4 章 | `dispatcher.py` | ✅ 完成（~550 行）|
+| 第 4 章 | `requirements.txt` | ✅ 完成 |
+| 第 4 章 | `.env.example` | ✅ 完成 |
+| 第 5 章 | `tool_manager.py` | ✅ 完成（~450 行）|
+| 第 5 章 | `trajectory_collector.py` | ✅ 完成（~500 行）|
+| 第 5 章 | `requirements.txt` | ✅ 完成 |
+| 第 5 章 | `.env.example` | ✅ 完成 |
+| 第 6 章 | `memory_manager.py` | ✅ 完成（~600 行）|
+| 第 6 章 | `compressor.py` | ✅ 完成（~200 行）|
+| 第 6 章 | `embedder.py` | ✅ 完成（~200 行）|
+| 第 6 章 | `requirements.txt` | ✅ 完成 |
+| 第 6 章 | `.env.example` | ✅ 完成 |
+| 第 7 章 | `search_engine.py` | ✅ 完成（~400 行）|
+| 第 7 章 | `web_browser.py` | ✅ 完成（~250 行）|
+| 第 7 章 | `rag_retriever.py` | ✅ 完成（~350 行）|
+| 第 7 章 | `knowledge_graph.py` | ✅ 完成（~200 行）|
+| 第 7 章 | `requirements.txt` | ✅ 完成 |
+| 第 7 章 | `.env.example` | ✅ 完成 |
+| 第 8 章 | `model_server.py` | ✅ 完成（~400 行）|
+| 第 8 章 | `quantize_awq.py` | ✅ 完成（~350 行）|
+| 第 8 章 | `metrics_collector.py` | ✅ 完成（~450 行）|
+| 第 8 章 | `requirements.txt` | ✅ 完成 |
+| 第 8 章 | `.env.example` | ✅ 完成 |
+| 第 9 章 | `research_agent.py` | ✅ 完成（~600 行）|
+| 第 9 章 | `verification.py` | ✅ 完成（~300 行）|
+| 第 9 章 | `session.py` | ✅ 完成（~350 行）|
+| 第 9 章 | `requirements.txt` | ✅ 完成 |
+| 第 9 章 | `.env.example` | ✅ 完成 |
+| 第 10 章 | `coordinator.py` | ✅ 完成（~700 行）|
+| 第 10 章 | `scheduler.py` | ✅ 完成（~400 行）|
+| 第 10 章 | `conflict_resolver.py` | ✅ 完成（~450 行）|
+| 第 10 章 | `requirements.txt` | ✅ 完成 |
+| 第 10 章 | `.env.example` | ✅ 完成 |
+| 第 11 章 | `api_server.py` | ✅ 完成（~400 行）|
+| 第 11 章 | `metrics.py` | ✅ 完成（~300 行）|
+| 第 11 章 | `logging_module.py` | ✅ 完成（~400 行）|
+| 第 11 章 | `Dockerfile` | ✅ 完成 |
+| 第 11 章 | `docker-compose.yml` | ✅ 完成 |
+| 第 11 章 | `requirements.txt` | ✅ 完成 |
+| 第 11 章 | `.env.example` | ✅ 完成 |
+| 第 12 章 | `hle_evaluator.py` | ✅ 完成（~350 行）|
+| 第 12 章 | `gaia_benchmark.py` | ✅ 完成（~300 行）|
+| 第 12 章 | `unified_evaluator.py` | ✅ 完成（~400 行）|
+| 第 12 章 | `requirements.txt` | ✅ 完成 |
+| 第 12 章 | `.env.example` | ✅ 完成 |
+| 第 13 章 | `fact_check_pipeline.py` | ✅ 完成（~600 行）|
+| 第 13 章 | `requirements.txt` | ✅ 完成 |
+| 第 14 章 | `cost_optimizer.py` | ✅ 完成（~500 行）|
+| 第 14 章 | `requirements.txt` | ✅ 完成 |
 
 ### 里程碑
 
 - [x] 專案初始化與結構建立
-- [ ] 完成第一部分（理論基石）
-- [ ] 完成第二部分（架構解構）
-- [ ] 完成第三部分（工程實踐）
-- [ ] 完成第四部分（評測與優化）
+- [x] 序章完成
+- [x] 完成第一部分（理論基石）：3/3 章 ✅
+- [x] 完成第二部分（架構解構）：4/4 章 ✅
+- [x] 完成第三部分（工程實踐）：4/4 章 ✅
+- [x] 完成第四部分（評測與優化）：3/3 章 ✅
 - [ ] 全書校對與優化
 
 ---
@@ -239,4 +315,4 @@ mirothinker-research-agent-in-action/
 
 ---
 
-**最後更新**: 2026-01-07
+**最後更新**: 2026-01-08

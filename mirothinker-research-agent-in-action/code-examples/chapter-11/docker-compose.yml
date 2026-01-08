@@ -1,0 +1,154 @@
+# 深度研究代理人 - Docker Compose 配置
+# ================================================
+# 第 11 章：生產環境部署
+# 本地開發與測試環境
+
+version: '3.8'
+
+services:
+  # ===================================
+  # API 服務
+  # ===================================
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - APP_ENV=development
+      - LOG_LEVEL=INFO
+      - DATABASE_URL=postgresql://user:password@db:5432/research
+      - REDIS_URL=redis://redis:6379/0
+      - LLM_API_URL=http://host.docker.internal:8080/v1
+    depends_on:
+      - db
+      - redis
+    volumes:
+      - .:/app:ro
+    networks:
+      - research-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ===================================
+  # PostgreSQL 資料庫
+  # ===================================
+  db:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=research
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - research-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d research"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ===================================
+  # Redis 快取與任務佇列
+  # ===================================
+  redis:
+    image: redis:7-alpine
+    command: redis-server --appendonly yes
+    volumes:
+      - redis-data:/data
+    ports:
+      - "6379:6379"
+    networks:
+      - research-net
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ===================================
+  # Prometheus 監控
+  # ===================================
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.enable-lifecycle'
+    networks:
+      - research-net
+
+  # ===================================
+  # Grafana 儀表板
+  # ===================================
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+    depends_on:
+      - prometheus
+    networks:
+      - research-net
+
+  # ===================================
+  # Redis Exporter（Prometheus 指標）
+  # ===================================
+  redis-exporter:
+    image: oliver006/redis_exporter:latest
+    environment:
+      - REDIS_ADDR=redis://redis:6379
+    ports:
+      - "9121:9121"
+    depends_on:
+      - redis
+    networks:
+      - research-net
+
+  # ===================================
+  # PostgreSQL Exporter（Prometheus 指標）
+  # ===================================
+  postgres-exporter:
+    image: prometheuscommunity/postgres-exporter:latest
+    environment:
+      - DATA_SOURCE_NAME=postgresql://user:password@db:5432/research?sslmode=disable
+    ports:
+      - "9187:9187"
+    depends_on:
+      - db
+    networks:
+      - research-net
+
+# ===================================
+# 網路
+# ===================================
+networks:
+  research-net:
+    driver: bridge
+
+# ===================================
+# 持久化儲存
+# ===================================
+volumes:
+  postgres-data:
+  redis-data:
+  prometheus-data:
+  grafana-data:

@@ -1,0 +1,29 @@
+# 深度研究代理人實戰 - 第 3 章：深度研究的認知框架
+# Python 3.9+ 需求
+
+# OpenAI API 客戶端（用於 GPT 模型）
+openai>=1.12.0
+
+# 環境變數管理
+python-dotenv>=1.0.0
+
+# HTTP 請求（用於搜尋 API）
+requests>=2.31.0
+
+# 資料處理
+dataclasses-json>=0.6.0
+
+# JSON 處理
+orjson>=3.9.0
+
+# 日誌格式化與進度顯示
+rich>=13.0.0
+
+# 命令列介面
+argparse  # Python 內建，但明確列出
+
+# 可選：Markdown 報告渲染
+markdown>=3.5.0
+
+# 可選：報告導出為 PDF
+weasyprint>=60.0

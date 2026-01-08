@@ -1,0 +1,31 @@
+# 深度研究代理人實戰 - 第 5 章：工具調用與軌跡收集
+# Python 3.9+ 需求
+
+# OpenAI API 客戶端（支援異步）
+openai>=1.12.0
+
+# 環境變數管理
+python-dotenv>=1.0.0
+
+# 異步 HTTP 請求
+aiohttp>=3.9.0
+
+# 資料序列化
+orjson>=3.9.0
+
+# 命令列介面
+argparse  # Python 內建
+
+# 日誌與進度顯示
+rich>=13.0.0
+
+# 可選：HTML 解析（網頁瀏覽工具）
+beautifulsoup4>=4.12.0
+lxml>=5.0.0
+
+# 可選：資料庫存儲
+sqlite3  # Python 內建
+
+# 開發工具
+pytest>=7.4.0
+pytest-asyncio>=0.21.0

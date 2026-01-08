@@ -1,0 +1,36 @@
+# 第 14 章：效能優化與成本控制 - 依賴
+
+# 核心依賴
+openai>=1.0.0
+anthropic>=0.8.0
+httpx>=0.25.0
+aiohttp>=3.9.0
+
+# Token 計算
+tiktoken>=0.5.0
+
+# 快取
+redis>=5.0.0
+diskcache>=5.6.0
+
+# 向量化（語義快取）
+sentence-transformers>=2.2.0
+numpy>=1.24.0
+
+# 配置
+python-dotenv>=1.0.0
+pydantic>=2.0.0
+pydantic-settings>=2.0.0
+
+# 監控
+prometheus-client>=0.17.0
+
+# 日誌
+structlog>=23.0.0
+
+# 資料處理
+pandas>=2.0.0
+
+# 測試
+pytest>=7.4.0
+pytest-asyncio>=0.21.0

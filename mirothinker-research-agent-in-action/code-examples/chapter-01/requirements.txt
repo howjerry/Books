@@ -1,0 +1,11 @@
+# 深度研究代理人實戰 - 第 1 章依賴
+# Python 3.10+ 推薦
+
+# OpenAI API 客戶端
+openai>=1.0.0
+
+# HTTP 客戶端（用於搜尋 API）
+httpx>=0.25.0
+
+# 環境變數管理
+python-dotenv>=1.0.0

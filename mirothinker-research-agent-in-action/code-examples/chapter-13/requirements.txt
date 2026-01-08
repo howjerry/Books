@@ -1,0 +1,41 @@
+# 第 13 章：幻覺處理與事實查核 - 依賴
+
+# 核心依賴
+openai>=1.0.0
+httpx>=0.25.0
+aiohttp>=3.9.0
+
+# 搜尋引擎整合
+duckduckgo-search>=4.0.0
+google-api-python-client>=2.100.0
+
+# NLP 處理
+spacy>=3.7.0
+transformers>=4.35.0
+
+# 知識圖譜
+neo4j>=5.0.0
+rdflib>=7.0.0
+
+# 資料處理
+pandas>=2.0.0
+numpy>=1.24.0
+
+# 日期處理
+python-dateutil>=2.8.2
+
+# 配置
+python-dotenv>=1.0.0
+pydantic>=2.0.0
+pydantic-settings>=2.0.0
+
+# 快取
+redis>=5.0.0
+diskcache>=5.6.0
+
+# 日誌
+structlog>=23.0.0
+
+# 測試
+pytest>=7.4.0
+pytest-asyncio>=0.21.0

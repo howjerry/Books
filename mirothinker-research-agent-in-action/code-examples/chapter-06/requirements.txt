@@ -1,0 +1,30 @@
+# 深度研究代理人實戰 - 第 6 章：長短時記憶管理
+# Python 3.9+ 需求
+
+# OpenAI API 客戶端
+openai>=1.12.0
+
+# 環境變數管理
+python-dotenv>=1.0.0
+
+# 數值計算
+numpy>=1.24.0
+
+# 資料序列化
+orjson>=3.9.0
+
+# 日誌與進度顯示
+rich>=13.0.0
+
+# 可選：向量資料庫
+# chromadb>=0.4.0
+# qdrant-client>=1.7.0
+# pinecone-client>=2.2.0
+
+# 可選：本地嵌入模型
+# sentence-transformers>=2.2.0
+# torch>=2.0.0
+
+# 開發工具
+pytest>=7.4.0
+pytest-asyncio>=0.21.0
