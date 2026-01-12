@@ -75,6 +75,8 @@ graph TB
     style F fill:#bff,stroke:#333
 ```
 
+![Enterprise System Requirements](../../diagrams/chapter-07-diagram-01.png)
+
 ### 7.1.3 本章專案：智慧客戶支援平台
 
 **場景**：一家電商平台需要建立智慧客戶支援系統，處理以下業務：

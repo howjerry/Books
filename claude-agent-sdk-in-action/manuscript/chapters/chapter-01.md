@@ -108,6 +108,8 @@ graph LR
     style E fill:#d4edda
 ```
 
+![Agent Core Loop](../../diagrams/chapter-01-diagram-01.png)
+
 **實際運作範例：**
 
 ```

@@ -1,0 +1,18 @@
+.node rect, .node circle, .node polygon, .node path {
+    stroke-width: 2px !important;
+    stroke: #FFFFFF !important;
+    fill: #000000 !important;
+}
+.edgePath .path {
+    stroke: #FFFFFF !important;
+    stroke-width: 2px !important;
+}
+.label {
+    color: #FFFFFF !important;
+    font-family: 'Inter', sans-serif !important;
+    font-weight: bold !important;
+}
+.nodeLabel {
+    color: #FFFFFF !important;
+    font-family: 'Inter', sans-serif !important;
+}

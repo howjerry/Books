@@ -1,0 +1,72 @@
+graph TB
+    subgraph "用戶層"
+        A1[Web 客戶端]
+        A2[Mobile App]
+        A3[第三方整合]
+    end
+
+    subgraph "API 層"
+        B1[API Gateway]
+        B2[負載平衡器]
+        B3[認證服務]
+    end
+
+    subgraph "應用層 - Agent 服務"
+        C1[路由 Agent]
+        C2[FAQ Agent]
+        C3[訂單 Agent]
+        C4[退款 Agent]
+        C5[技術支援 Agent]
+    end
+
+    subgraph "資料層"
+        D1[(PostgreSQL<br/>主資料庫)]
+        D2[(Redis<br/>快取 & 會話)]
+        D3[(Elasticsearch<br/>搜尋引擎)]
+        D4[S3<br/>檔案儲存]
+    end
+
+    subgraph "基礎設施層"
+        E1[消息隊列<br/>RabbitMQ]
+        E2[監控<br/>Prometheus]
+        E3[日誌<br/>ELK Stack]
+    end
+
+    A1 --> B1
+    A2 --> B1
+    A3 --> B1
+    B1 --> B2
+    B2 --> B3
+    B3 --> C1
+
+    C1 --> C2
+    C1 --> C3
+    C1 --> C4
+    C1 --> C5
+
+    C2 --> D1
+    C2 --> D2
+    C2 --> D3
+
+    C3 --> D1
+    C3 --> D2
+
+    C4 --> D1
+    C4 --> E1
+
+    C5 --> D3
+    C5 --> D4
+
+    C1 -.-> E2
+    C2 -.-> E2
+    C3 -.-> E2
+    C4 -.-> E2
+    C5 -.-> E2
+
+    C1 -.-> E3
+    C2 -.-> E3
+    C3 -.-> E3
+
+    style B1 fill:#f9f,stroke:#333
+    style C1 fill:#bbf,stroke:#333
+    style D1 fill:#bfb,stroke:#333

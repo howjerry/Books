@@ -120,6 +120,8 @@ graph TB
     style Report fill:#9f9,stroke:#333,stroke-width:2px
 ```
 
+![Report System Architecture](../../diagrams/chapter-02-diagram-01.png)
+
 **核心元件**：
 
 1. **報表協調器 (Report Coordinator)**
@@ -1606,6 +1608,8 @@ graph TB
     style Block3 fill:#f99,stroke:#333
     style Block4 fill:#f99,stroke:#333
 ```
+
+![Security Layers](../../diagrams/chapter-02-diagram-02.png)
 
 ### 1.13.3 審計日誌
 

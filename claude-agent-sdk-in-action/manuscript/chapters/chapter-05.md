@@ -79,6 +79,8 @@ graph TB
     style Report fill:#9ff,stroke:#333,stroke-width:2px
 ```
 
+![AI Incident Response Team Collaboration](../../diagrams/chapter-05-diagram-01.png)
+
 **結果：AI 團隊在 8 分鐘內完成分析**（vs. 人工 60 分鐘）
 
 讓我們開始建立這個系統！
@@ -99,6 +101,8 @@ graph LR
     B --> C[Subagent C]
     C --> D[Subagent D]
 ```
+
+![Sequential Collaboration Mode](../../diagrams/chapter-05-diagram-02.png)
 
 **特點**：
 - 一個接一個執行
@@ -135,6 +139,8 @@ graph TB
     B --> Merge
     C --> Merge
 ```
+
+![Parallel Collaboration Mode](../../diagrams/chapter-05-diagram-03.png)
 
 **特點**：
 - 同時執行多個獨立任務
@@ -173,6 +179,8 @@ graph TB
 
     B --> B1[Sub-subagent B1]
 ```
+
+![Hierarchical Collaboration Mode](../../diagrams/chapter-05-diagram-04.png)
 
 **特點**：
 - Subagent 可以創建更多 Subagents
@@ -220,6 +228,8 @@ graph TB
 
     Event3 --> AgentD[Subagent D:<br/>Solution Generator]
 ```
+
+![Event-Driven Collaboration Mode](../../diagrams/chapter-05-diagram-05.png)
 
 **特點**：
 - 根據結果動態決定下一步
@@ -348,6 +358,8 @@ graph TB
     style Aggregator fill:#9f9,stroke:#333,stroke-width:2px
     style Report fill:#9ff,stroke:#333,stroke-width:2px
 ```
+
+![System Architecture](../../diagrams/chapter-05-diagram-06.png)
 
 ### 5.2.2 核心元件說明
 

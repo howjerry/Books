@@ -1460,6 +1460,8 @@ graph TB
     end
 ```
 
+![Single Agent vs Subagents Architecture](../../diagrams/chapter-04-diagram-01.png)
+
 **關鍵差異總結：**
 
 | 面向 | 單一 Agent | Subagents 架構 |

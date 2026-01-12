@@ -1,0 +1,16 @@
+{
+  "theme": "base",
+  "themeVariables": {
+    "darkMode": "true",
+    "background": "#000000",
+    "primaryColor": "#000000",
+    "primaryTextColor": "#FFFFFF",
+    "primaryBorderColor": "#FFFFFF",
+    "lineColor": "#FFFFFF",
+    "secondaryColor": "#111111",
+    "tertiaryColor": "#111111",
+    "mainBkg": "#000000",
+    "nodeBorder": "#FFFFFF"
+  },
+  "fontFamily": "Inter, sans-serif"
+}

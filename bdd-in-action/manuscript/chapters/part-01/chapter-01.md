@@ -71,6 +71,7 @@ graph TB
     style 制定階段 fill:#fff3e0
     style 自動化階段 fill:#e8f5e9
 ```
+![BDD Stages](../../diagrams/bdd-core-stages.png)
 
 **圖 1.1：BDD 的三個核心階段**
 
@@ -181,6 +182,7 @@ graph LR
 
     F[資訊流失] -.-> |每次傳遞損失 20-30%| A
 ```
+![Information Loss](../../diagrams/information-loss.png)
 
 **圖 1.2：需求傳遞的資訊流失**
 
@@ -325,6 +327,7 @@ graph LR
 
     style G fill:#c8e6c9
 ```
+![Traditional vs BDD](../../diagrams/traditional-vs-bdd.png)
 
 **圖 1.3：傳統文件 vs. 動態文件**
 
@@ -438,6 +441,7 @@ graph TD
     style K fill:#fff9c4
     style M fill:#fff9c4
 ```
+![BDD Applicability](../../diagrams/bdd-decision-tree.png)
 
 **圖 1.4：BDD 適用性決策樹**
 
@@ -483,6 +487,7 @@ graph LR
     style Part2 fill:#fff3e0
     style Part3 fill:#e8f5e9
 ```
+![Learning Roadmap](../../diagrams/book-roadmap.png)
 
 **圖 1.5：本書學習路線圖**
 

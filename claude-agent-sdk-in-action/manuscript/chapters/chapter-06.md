@@ -53,6 +53,8 @@ graph TB
     style Z fill:#f99,stroke:#333
 ```
 
+![Three Levels of Output Validation](../../diagrams/chapter-06-diagram-01.png)
+
 **層次 1：格式驗證**
 - 輸出是否符合預期的結構？
 - JSON 格式是否正確？
@@ -110,6 +112,8 @@ graph LR
     style E fill:#ff9,stroke:#333
     style F fill:#9f9,stroke:#333
 ```
+
+![Output Validation Architecture](../../diagrams/chapter-06-diagram-02.png)
 
 ### 6.2.2 核心組件
 

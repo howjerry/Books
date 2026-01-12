@@ -110,6 +110,8 @@ graph TB
     style STM fill:#ff9,stroke:#333,stroke-width:2px
 ```
 
+![Agent Memory System](../../diagrams/chapter-03-diagram-01.png)
+
 | 記憶類型 | 範例 | 實作方式 | 存活時間 |
 |---------|------|---------|---------|
 | **短期記憶** | 對話歷史 | `messages` 陣列 | 單次對話 |
@@ -407,6 +409,8 @@ graph TB
     style Agent fill:#f9f,stroke:#333,stroke-width:4px
     style Load fill:#9f9,stroke:#333,stroke-width:2px
 ```
+
+![Knowledge Management Agent](../../diagrams/chapter-03-diagram-02.png)
 
 ### 3.3.2 實作：CLAUDE.md 解析器
 
