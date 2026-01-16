@@ -1,0 +1,19 @@
+# Chapter 1 - Basic RAG System Dependencies
+
+# Core
+langchain>=0.1.0
+langchain-openai>=0.0.5
+langchain-community>=0.0.10
+
+# Vector Store
+chromadb>=0.4.0
+
+# Document Loaders
+pypdf>=3.0.0
+python-docx>=0.8.11
+
+# Utilities
+python-dotenv>=1.0.0
+
+# Optional: For evaluation
+pandas>=2.0.0
