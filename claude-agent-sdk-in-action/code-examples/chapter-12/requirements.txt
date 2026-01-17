@@ -1,0 +1,30 @@
+# 第 12 章：成本优化与资源管理依赖
+
+# AI SDK
+anthropic==0.34.0
+
+# 数据库
+sqlalchemy==2.0.23
+alembic==1.13.0
+psycopg2-binary==2.9.9
+asyncpg==0.29.0
+
+# 数据验证
+pydantic==2.5.0
+pydantic-settings==2.1.0
+
+# 缓存
+redis==5.0.1
+
+# 工具
+python-dotenv==1.0.0
+pyyaml==6.0.1
+
+# 监控与可视化
+pandas==2.1.4
+plotly==5.18.0
+
+# 测试
+pytest==7.4.3
+pytest-asyncio==0.21.1
+httpx==0.25.2
