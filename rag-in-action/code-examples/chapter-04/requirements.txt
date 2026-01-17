@@ -1,0 +1,10 @@
+# Chapter 4: Chunking 策略
+# 文件切割實作與評估依賴
+
+sentence-transformers==2.2.2
+numpy==1.24.3
+scikit-learn==1.3.2
+tiktoken==0.5.2
+rich==13.7.0
+matplotlib==3.8.2
+pandas==2.1.4

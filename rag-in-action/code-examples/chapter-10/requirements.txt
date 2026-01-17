@@ -1,0 +1,10 @@
+# Chapter 10: Deployment Architecture
+# 部署架構依賴
+
+fastapi==0.109.0
+uvicorn==0.27.0
+redis==5.0.1
+httpx==0.26.0
+locust==2.20.1
+pydantic==2.5.0
+pydantic-settings==2.1.0

@@ -1,0 +1,223 @@
+# chapter-09/alerting_rules.yml
+#
+# RAG 系統告警規則配置
+#
+# 使用方式：
+#   將此檔案放置於 Prometheus 設定目錄
+#   在 prometheus.yml 中引用：
+#   rule_files:
+#     - alerting_rules.yml
+
+groups:
+  # ═══════════════════════════════════════════════════════════════
+  # 可用性告警
+  # ═══════════════════════════════════════════════════════════════
+  - name: rag_availability
+    interval: 30s
+    rules:
+      # 服務不可用                                        # ‹1›
+      - alert: RAGServiceDown
+        expr: up{job="rag-service"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "RAG 服務不可用"
+          description: "RAG 服務已停止回應超過 1 分鐘"
+          runbook_url: "https://wiki.example.com/runbooks/rag-service-down"
+
+      # 向量資料庫連線失敗
+      - alert: VectorDBConnectionFailed
+        expr: rag_vector_db_up == 0
+        for: 30s
+        labels:
+          severity: critical
+        annotations:
+          summary: "向量資料庫連線失敗"
+          description: "無法連接到向量資料庫，檢索功能將無法運作"
+
+      # 錯誤率過高                                        # ‹2›
+      - alert: HighErrorRate
+        expr: |
+          sum(rate(rag_requests_total{status="error"}[5m])) /
+          sum(rate(rag_requests_total[5m])) > 0.05
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "錯誤率超過 5%"
+          description: "過去 5 分鐘的請求錯誤率為 {{ $value | humanizePercentage }}"
+
+  # ═══════════════════════════════════════════════════════════════
+  # 效能告警
+  # ═══════════════════════════════════════════════════════════════
+  - name: rag_performance
+    interval: 30s
+    rules:
+      # 延遲過高                                          # ‹3›
+      - alert: HighLatencyP95
+        expr: |
+          histogram_quantile(0.95,
+            sum(rate(rag_request_latency_seconds_bucket[5m])) by (le)
+          ) > 5
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "P95 延遲超過 5 秒"
+          description: "過去 5 分鐘的 P95 延遲為 {{ $value | humanizeDuration }}"
+
+      # 檢索延遲過高
+      - alert: HighRetrievalLatency
+        expr: |
+          histogram_quantile(0.95,
+            sum(rate(rag_retrieval_latency_seconds_bucket[5m])) by (le)
+          ) > 1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "檢索 P95 延遲超過 1 秒"
+          description: "檢索延遲異常，可能是向量資料庫效能問題"
+
+      # LLM 延遲過高
+      - alert: HighLLMLatency
+        expr: |
+          histogram_quantile(0.95,
+            sum(rate(rag_llm_latency_seconds_bucket[5m])) by (le, model)
+          ) > 10
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "LLM P95 延遲超過 10 秒"
+          description: "LLM 回應緩慢，模型: {{ $labels.model }}"
+
+      # 佇列堆積                                          # ‹4›
+      - alert: HighQueueDepth
+        expr: rag_queue_depth > 100
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "請求佇列堆積"
+          description: "當前佇列深度 {{ $value }}，可能需要擴容"
+
+  # ═══════════════════════════════════════════════════════════════
+  # 品質告警
+  # ═══════════════════════════════════════════════════════════════
+  - name: rag_quality
+    interval: 1m
+    rules:
+      # 無回答率過高                                      # ‹5›
+      - alert: HighNoAnswerRate
+        expr: |
+          sum(rate(rag_answers_total{status="no_context"}[15m])) /
+          sum(rate(rag_answers_total[15m])) > 0.3
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: "無法回答率超過 30%"
+          description: "過去 15 分鐘有 {{ $value | humanizePercentage }} 的問題無法回答，可能需要擴充知識庫"
+
+      # 幻覺風險過高
+      - alert: HighHallucinationRisk
+        expr: |
+          histogram_quantile(0.5,
+            sum(rate(rag_hallucination_risk_bucket[30m])) by (le)
+          ) > 0.3
+        for: 30m
+        labels:
+          severity: warning
+        annotations:
+          summary: "幻覺風險中位數超過 30%"
+          description: "回答品質可能下降，建議檢查 Prompt 設定"
+
+      # 引用數過低
+      - alert: LowCitationRate
+        expr: |
+          histogram_quantile(0.5,
+            sum(rate(rag_citation_count_bucket[30m])) by (le)
+          ) < 1
+        for: 30m
+        labels:
+          severity: info
+        annotations:
+          summary: "引用數中位數低於 1"
+          description: "回答可能缺乏來源支持"
+
+  # ═══════════════════════════════════════════════════════════════
+  # 成本告警
+  # ═══════════════════════════════════════════════════════════════
+  - name: rag_cost
+    interval: 5m
+    rules:
+      # 每小時成本過高                                    # ‹6›
+      - alert: HighHourlyCost
+        expr: |
+          sum(increase(rag_cost_usd_total[1h])) > 10
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "每小時 API 成本超過 $10"
+          description: "過去一小時的 API 成本為 ${{ $value | printf \"%.2f\" }}"
+
+      # 每日成本過高
+      - alert: HighDailyCost
+        expr: |
+          sum(increase(rag_cost_usd_total[24h])) > 100
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "每日 API 成本超過 $100"
+          description: "過去 24 小時的 API 成本為 ${{ $value | printf \"%.2f\" }}"
+
+      # Token 使用量異常                                  # ‹7›
+      - alert: AbnormalTokenUsage
+        expr: |
+          sum(rate(rag_tokens_total[5m])) >
+          sum(rate(rag_tokens_total[1h] offset 1d)) * 2
+        for: 10m
+        labels:
+          severity: info
+        annotations:
+          summary: "Token 使用量異常增加"
+          description: "當前 Token 使用率是昨天同時段的 2 倍以上"
+
+  # ═══════════════════════════════════════════════════════════════
+  # SLO 告警
+  # ═══════════════════════════════════════════════════════════════
+  - name: rag_slo
+    interval: 1m
+    rules:
+      # 可用性 SLO 告警（目標 99.5%）                     # ‹8›
+      - alert: SLOAvailabilityBreach
+        expr: |
+          1 - (
+            sum(rate(rag_requests_total{status="error"}[30m])) /
+            sum(rate(rag_requests_total[30m]))
+          ) < 0.995
+        for: 5m
+        labels:
+          severity: critical
+          slo: availability
+        annotations:
+          summary: "可用性 SLO 違規"
+          description: "30 分鐘滾動可用性 {{ $value | humanizePercentage }} 低於 99.5% SLO"
+
+      # 延遲 SLO 告警（目標 P95 < 3s）
+      - alert: SLOLatencyBreach
+        expr: |
+          histogram_quantile(0.95,
+            sum(rate(rag_request_latency_seconds_bucket[30m])) by (le)
+          ) > 3
+        for: 5m
+        labels:
+          severity: critical
+          slo: latency
+        annotations:
+          summary: "延遲 SLO 違規"
+          description: "30 分鐘 P95 延遲 {{ $value | humanizeDuration }} 超過 3 秒 SLO"

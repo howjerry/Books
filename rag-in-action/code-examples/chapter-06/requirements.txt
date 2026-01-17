@@ -1,0 +1,10 @@
+# Chapter 6: Re-Ranking
+# 二階段檢索系統依賴
+
+sentence-transformers==2.2.2
+qdrant-client==1.7.0
+torch>=2.0.0
+numpy==1.24.3
+scikit-learn==1.3.2
+rich==13.7.0
+tqdm==4.66.1

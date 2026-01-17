@@ -1,0 +1,12 @@
+# Chapter 2: 語義搜尋的誕生
+# Embedding 與向量資料庫依賴
+
+sentence-transformers==2.2.2
+torch>=2.0.0
+qdrant-client==1.7.0
+numpy==1.24.3
+matplotlib==3.8.2
+scikit-learn==1.3.2
+pandas==2.0.3
+rich==13.7.0
+umap-learn==0.5.5
