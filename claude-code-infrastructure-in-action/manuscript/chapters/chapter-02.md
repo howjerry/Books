@@ -1456,7 +1456,7 @@ async getJobStatus(req: Request, res: Response): Promise<void> {
 
 ## 7. 決策流程圖
 [Mermaid 流程圖]
-\`\`\`
+```
 
 ### 資源檔案模板
 
