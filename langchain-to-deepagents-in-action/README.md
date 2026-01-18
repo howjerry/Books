@@ -85,9 +85,9 @@ graph LR
 
 | 章節 | 標題 | 狀態 |
 |------|------|------|
-| Ch 7 | 規劃模式 (The Planning Pattern) | ⏳ 規劃中 |
-| Ch 8 | 記憶模式 (The Memory Pattern) | ⏳ 規劃中 |
-| Ch 9 | 自我修正模式 (The Reflexion Pattern) | ⏳ 規劃中 |
+| Ch 7 | 規劃模式 (The Planning Pattern) | ✅ 完成 |
+| Ch 8 | 記憶模式 (The Memory Pattern) | ✅ 完成 |
+| Ch 9 | 自我修正模式 (The Reflexion Pattern) | ✅ 完成 |
 
 ### Part 4: 生產部署——從實驗室到企業 (Chapter 10-13)
 
@@ -147,10 +147,10 @@ langchain-to-deepagents-in-action/
 ## 進度追蹤
 
 - **總章節數**: 13 章
-- **已完成**: 6 章 (Part 1 + Part 2 完成)
-- **進行中**: Part 3 (Ch 7-9)
+- **已完成**: 9 章 (Part 1 + Part 2 + Part 3 完成)
+- **進行中**: Part 4 (Ch 10-13)
 - **預計完成**: 2026 Q4
 
 ---
 
-*版本: v0.3 | 最後更新: 2026-01-18*
+*版本: v0.4 | 最後更新: 2026-01-18*
