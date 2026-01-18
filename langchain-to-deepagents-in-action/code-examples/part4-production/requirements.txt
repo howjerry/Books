@@ -1,0 +1,49 @@
+# LangChain 到 DeepAgents 實戰 - Part 4 Dependencies
+# TechAssist v2.0 - Production Deployment
+
+# Core
+langchain>=0.3.0
+langchain-anthropic>=0.3.0
+langchain-core>=0.3.0
+langgraph>=0.2.0
+
+# API Framework
+fastapi>=0.109.0
+uvicorn[standard]>=0.27.0
+pydantic>=2.6.0
+pydantic-settings>=2.2.0
+
+# Database & Cache
+redis>=5.0.0
+qdrant-client>=1.9.0
+asyncpg>=0.29.0
+sqlalchemy>=2.0.0
+
+# Observability
+opentelemetry-api>=1.24.0
+opentelemetry-sdk>=1.24.0
+opentelemetry-exporter-otlp>=1.24.0
+opentelemetry-instrumentation-fastapi>=0.45b0
+opentelemetry-instrumentation-redis>=0.45b0
+opentelemetry-instrumentation-httpx>=0.45b0
+
+# Security
+cryptography>=42.0.0
+python-jose[cryptography]>=3.3.0
+passlib[bcrypt]>=1.7.4
+
+# Utilities
+python-dotenv>=1.0.0
+httpx>=0.27.0
+tenacity>=8.2.0
+rich>=13.7.0
+
+# Testing
+pytest>=8.0.0
+pytest-asyncio>=0.23.0
+pytest-cov>=4.1.0
+
+# Development
+black>=24.0.0
+ruff>=0.2.0
+mypy>=1.8.0
